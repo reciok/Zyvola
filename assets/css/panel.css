@@ -1,0 +1,666 @@
+/* ── Panel unificado: barra de proyectos ────────────────── */
+
+.ppbar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(180, 160, 100, 0.22);
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.ppbar-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  color: rgba(68, 83, 106, 0.5);
+  white-space: nowrap;
+  font-family: var(--font-tech, sans-serif);
+}
+
+.ppbar-select {
+  flex: 1;
+  min-width: 140px;
+  max-width: 300px;
+  background: transparent;
+  border: 1px solid rgba(180, 160, 100, 0.32);
+  border-radius: 6px;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.86rem;
+  color: var(--marble, #44536a);
+  font-family: var(--font-tech, sans-serif);
+  cursor: pointer;
+  transition: border-color 160ms;
+}
+
+.ppbar-select:focus {
+  outline: none;
+  border-color: var(--gold, #c8a84b);
+}
+
+.ppbar-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(180, 160, 100, 0.28);
+  border-radius: 6px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.8rem;
+  font-family: var(--font-tech, sans-serif);
+  color: var(--marble, #44536a);
+  cursor: pointer;
+  transition: border-color 160ms, background 160ms, color 160ms;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.ppbar-btn.ppbar-icon {
+  padding: 0.32rem 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ppbar-btn:hover {
+  border-color: var(--gold, #c8a84b);
+  background: rgba(200, 168, 75, 0.07);
+}
+
+.ppbar-btn.ppbar-danger:hover {
+  border-color: #c05252;
+  background: rgba(192, 82, 82, 0.07);
+  color: #c05252;
+}
+
+.ppbar-confirm {
+  border-color: var(--gold, #c8a84b) !important;
+  color: var(--gold, #c8a84b) !important;
+}
+
+.ppbar-confirm:hover {
+  background: rgba(200, 168, 75, 0.12) !important;
+}
+
+.panel-canvas {
+  position: relative;
+  min-height: 76vh;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  overflow: hidden;
+}
+
+.folio-stage {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  padding: 0.5rem 0 1.2rem;
+}
+
+.folio-sheet {
+  position: relative;
+  width: 1000px;
+  max-width: 1000px;
+  margin: 0 auto;
+  min-height: 980px;
+  border: 1px solid rgba(184, 150, 66, 0.32);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(200, 168, 75, 0.05), transparent 35%),
+    repeating-linear-gradient(135deg, rgba(184, 150, 66, 0.03) 0 2px, transparent 2px 8px),
+    #fff;
+  box-shadow: 0 24px 40px rgba(80, 64, 40, 0.08);
+}
+
+.folio-guides {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.folio-slots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.folio-highlight {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(103, 118, 144, 0.35);
+  background: linear-gradient(160deg, rgba(225, 233, 246, 0.35), rgba(238, 243, 250, 0.28));
+  transition: left 80ms ease-out, top 80ms ease-out, opacity 120ms ease;
+}
+
+.folio-highlight.is-visible {
+  opacity: 1;
+}
+
+.folio-sheet.is-arranging {
+  background:
+    linear-gradient(180deg, rgba(236, 238, 242, 0.95), rgba(228, 231, 236, 0.95));
+  border-color: rgba(120, 128, 142, 0.48);
+}
+
+.folio-sheet.is-arranging::after {
+  content: "Modo colocacion";
+  position: sticky;
+  top: 8px;
+  left: 14px;
+  display: inline-block;
+  padding: 0.24rem 0.48rem;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(60, 70, 86, 0.82);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(120, 128, 142, 0.3);
+  z-index: 3;
+}
+
+.folio-slot {
+  position: absolute;
+  border: 1px solid #E5E5E5;
+  border-radius: 12px;
+  background: #FAFAFA;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  opacity: 0;
+  transform: scale(0.985);
+  transition: opacity 120ms ease, transform 120ms ease;
+}
+
+.folio-sheet.is-arranging .folio-slot {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.folio-sheet.show-slots .folio-slot {
+  opacity: 0.92;
+  transform: scale(1);
+}
+
+.folio-sheet.is-arranging .folio-slot {
+  border-color: rgba(116, 130, 154, 0.48);
+}
+
+.folio-highlight {
+  border: 1px solid #4A90E2;
+  background: rgba(74, 144, 226, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+}
+
+.folio-slot.is-next {
+  border-style: solid;
+  border-color: rgba(102, 116, 140, 0.45);
+  background:
+    linear-gradient(160deg, rgba(238, 242, 248, 0.5), rgba(224, 231, 242, 0.42));
+}
+
+.folio-guide {
+  position: absolute;
+  background: rgba(184, 150, 66, 0.9);
+}
+
+.folio-guide-v {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+}
+
+.folio-guide-h {
+  left: 0;
+  right: 0;
+  height: 1px;
+}
+
+
+.pc-drop-hint p {
+  margin: 0;
+  max-width: 540px;
+  font-size: 0.9rem;
+}
+
+.pc-block {
+  position: absolute;
+  border: 1px solid rgba(184, 152, 80, 0.22);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 20px rgba(60, 50, 30, 0.07), 0 1px 4px rgba(60, 50, 30, 0.04);
+  overflow: hidden;
+  min-width: 220px;
+  max-width: 520px;
+  min-height: 260px;
+  max-height: 520px;
+  transition: left 90ms ease-out, top 90ms ease-out, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.folio-sheet.is-arranging .pc-block {
+  box-shadow: 0 20px 28px rgba(58, 66, 84, 0.22);
+}
+
+.pc-block:hover {
+  border-color: rgba(184, 150, 66, 0.45);
+  box-shadow: 0 8px 28px rgba(100, 80, 30, 0.11), 0 2px 6px rgba(60, 50, 30, 0.05);
+}
+
+.pc-block.is-collapsed {
+  min-height: 54px;
+}
+
+.pc-block-head {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0 0.7rem;
+  border-bottom: 1px solid rgba(184, 152, 80, 0.14);
+  background: rgba(252, 250, 245, 0.96);
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.pc-is-dragging .pc-block-head {
+  cursor: grabbing;
+}
+
+.pc-block-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.pc-block-drag {
+  color: rgba(68, 83, 106, 0.38);
+  font-size: 1rem;
+  letter-spacing: -0.06em;
+}
+
+.pc-block-title {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.78rem;
+  font-family: var(--font-tech, sans-serif);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--marble, #44536a);
+}
+
+.pc-block-title:focus {
+  outline: 1px solid rgba(184, 150, 66, 0.5);
+  border-radius: 4px;
+  padding: 0.12rem 0.3rem;
+  background: rgba(255, 255, 255, 0.85);
+}
+
+.pc-block-actions {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.pc-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  width: 190px;
+  border: 1px solid rgba(184, 150, 66, 0.35);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 12px 24px rgba(50, 40, 20, 0.16);
+  z-index: 5;
+  padding: 0.22rem;
+}
+
+.pc-block.menu-open .pc-menu {
+  display: grid;
+}
+
+.pc-menu-item {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--marble, #44536a);
+  font-size: 0.74rem;
+  font-family: var(--font-tech, sans-serif);
+  padding: 0.42rem 0.48rem;
+  cursor: pointer;
+}
+
+.pc-menu-item:hover {
+  background: rgba(200, 168, 75, 0.11);
+}
+
+.pc-menu-item-danger {
+  color: #b84949;
+}
+
+.pc-menu-item-danger:hover {
+  background: rgba(184, 73, 73, 0.11);
+}
+
+.pc-btn {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(184, 150, 66, 0.28);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--marble, #44536a);
+  font-size: 0.72rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pc-btn:hover {
+  border-color: rgba(184, 150, 66, 0.58);
+  background: rgba(200, 168, 75, 0.12);
+}
+
+.pc-btn-danger:hover {
+  border-color: #b84949;
+  color: #b84949;
+  background: rgba(184, 73, 73, 0.1);
+}
+
+.pc-block-body {
+  height: calc(100% - 40px);
+  overflow: hidden;
+  padding: 0.5rem 0.6rem 0.5rem;
+}
+
+.pc-block.is-collapsed .pc-block-body,
+.pc-block.is-collapsed .pc-resize {
+  display: none;
+}
+
+.pc-runtime {
+  min-height: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-size: 0.82rem;
+}
+
+.pc-runtime * {
+  max-width: 100%;
+}
+
+.pc-runtime .pc-hidden {
+  display: none !important;
+}
+
+/* ── Modo compacto: layout principal ── */
+.pc-runtime.pc-runtime-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden;
+}
+
+.pc-runtime.pc-runtime-compact > * {
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+/* Todos los wrappers intermedios: sin altura propia, sin padding extra */
+.pc-runtime.pc-runtime-compact .fx-calculator-shell,
+.pc-runtime.pc-runtime-compact .fx-calculator-card,
+.pc-runtime.pc-runtime-compact .fx-calculator-wrap,
+.pc-runtime.pc-runtime-compact .pc-form-panel {
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* ── Neutralizar estilos base del runtime ── */
+.pc-runtime.pc-runtime-compact .fx-calculator-shell { margin: 0 !important; }
+
+.pc-runtime.pc-runtime-compact .fx-calculator-card {
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+/* ── Formulario compacto: grid 2 col sin gaps grandes ── */
+.pc-runtime.pc-runtime-compact .pc-form-panel,
+.pc-runtime.pc-runtime-compact .fx-calculator-form {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.28rem 0.5rem !important;
+  padding: 0 !important;
+  background: none !important;
+  border: none !important;
+  margin: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+}
+
+.pc-runtime.pc-runtime-compact .fx-fields-grid {
+  display: contents !important;
+}
+
+.pc-runtime.pc-runtime-compact .fx-form-grid {
+  display: contents !important;
+}
+
+.pc-runtime.pc-runtime-compact .fx-form-actions,
+.pc-runtime.pc-runtime-compact .pc-form-panel .fx-form-actions {
+  grid-column: 1 / -1;
+  display: none !important;
+}
+
+/* ── Campos individuales ── */
+.pc-runtime.pc-runtime-compact .fx-field,
+.pc-runtime.pc-runtime-compact .pc-field {
+  gap: 0.04rem !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: none !important;
+  min-width: 0;
+}
+
+.pc-runtime.pc-runtime-compact .fx-form-grid > .fx-field,
+.pc-runtime.pc-runtime-compact .fx-fields-grid > .fx-field {
+  min-width: 0;
+}
+
+.pc-runtime.pc-runtime-compact .fx-field-label,
+.pc-runtime.pc-runtime-compact .pc-field label,
+.pc-runtime.pc-runtime-compact .fx-field label {
+  display: block;
+  font-size: 0.5rem !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(100, 115, 138, 0.7);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0 0 0.03rem !important;
+  line-height: 1.2;
+}
+
+.pc-runtime.pc-runtime-compact input,
+.pc-runtime.pc-runtime-compact select,
+.pc-runtime.pc-runtime-compact textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 0 !important;
+  height: 22px;
+  font-size: 0.7rem !important;
+  padding: 0.08rem 0.1rem !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  border-bottom: 1.5px solid rgba(184, 150, 66, 0.55) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.pc-runtime.pc-runtime-compact input:focus,
+.pc-runtime.pc-runtime-compact select:focus,
+.pc-runtime.pc-runtime-compact textarea:focus {
+  border-bottom-color: rgba(184, 150, 66, 0.95) !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* ── Separador entre form y resultados ── */
+.pc-kpi-rail {
+  margin-top: 0.12rem;
+  padding-top: 0.12rem;
+  border-top: 1px solid rgba(184, 150, 66, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  flex-shrink: 0;
+}
+
+/* ── Filas de resultado: Label: Valor ── */
+.pc-kpi-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.pc-kpi-key {
+  font-size: 0.6rem;
+  letter-spacing: 0.03em;
+  color: rgba(100, 115, 138, 0.75);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pc-kpi-val {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(36, 50, 70, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.pc-kpi-empty {
+  font-size: 0.6rem;
+  color: rgba(100, 115, 138, 0.5);
+  font-style: italic;
+}
+
+/* ── Línea de resumen ── */
+.pc-summary-line {
+  margin: 0.3rem 0 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.58rem;
+  line-height: 1.25;
+  color: rgba(100, 115, 138, 0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+/* ── Ocultar output original, tablas y demás ruido ── */
+.pc-runtime.pc-runtime-compact .pc-output-panel,
+.pc-runtime.pc-runtime-compact [class*="scroll"],
+.pc-runtime.pc-runtime-compact .fx-results,
+.pc-runtime.pc-runtime-compact .fx-results-wrap,
+.pc-runtime.pc-runtime-compact .fx-table,
+.pc-runtime.pc-runtime-compact .table-wrap {
+  overflow: hidden !important;
+}
+
+.pc-fallback {
+  padding: 0.9rem;
+  border: 1px dashed rgba(184, 150, 66, 0.35);
+  border-radius: 8px;
+  color: rgba(68, 83, 106, 0.76);
+}
+
+.pc-resize {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  background: linear-gradient(135deg, transparent 48%, rgba(184, 150, 66, 0.5) 49%, rgba(184, 150, 66, 0.5) 60%, transparent 61%);
+  cursor: nwse-resize;
+}
+
+@media (max-width: 840px) {
+  .panel-canvas {
+    min-height: 60vh;
+    overflow: hidden;
+  }
+
+  .folio-sheet {
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  .pc-block {
+    left: 10px !important;
+    width: calc(100% - 20px) !important;
+    min-width: 0;
+    position: relative;
+    top: auto !important;
+    margin: 0.6rem 0;
+    height: 330px !important;
+    min-height: 300px;
+    max-height: 380px;
+  }
+
+  .pc-block-body {
+    height: calc(100% - 48px);
+  }
+
+  .pc-runtime.pc-runtime-compact {
+    grid-template-columns: 1fr;
+  }
+
+  .pc-runtime.pc-runtime-compact .fx-fields-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pc-runtime.pc-runtime-compact .pc-form-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .pc-kpi-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Herramienta financiera | Zyvola Finanzas</title>
+    <meta name="description" content="Detalle funcional de herramienta financiera en Zyvola." />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://zyvola.com/finance/herramienta" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../assets/css/styles.css" />
+    <link rel="stylesheet" href="../../assets/css/dashboard.css" />
+  </head>
+  <body data-page="finance" data-category="finance" data-depth="2">
+    <div id="site-header"></div>
+    <div id="finance-tools-menu"></div>
+
+    <main class="main">
+      <section class="section">
+        <div class="container reveal">
+          <div id="dashboard-send-slot" style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+            <button type="button" class="db-send-btn" id="dashboard-send-btn-static" aria-label="Enviar resultados a dashboard" onclick="if (window.ZyvolaOpenSendModal) { window.ZyvolaOpenSendModal(); }">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="3" y1="9" x2="21" y2="9"></line>
+                <line x1="9" y1="21" x2="9" y2="9"></line>
+              </svg>
+              Enviar a dashboard
+            </button>
+          </div>
+          <div id="tool-content"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="../../assets/js/pages.js"></script>
+    <script src="../../assets/js/financeModuleBlueprints.js"></script>
+    <script src="../../assets/js/financeModuleEngine.js"></script>
+    <script src="../../assets/js/site.js"></script>
+    <script src="../../assets/js/charts.js"></script>
+    <script src="../../assets/js/financeToolRuntime.js"></script>
+    <script src="../../assets/js/portfolioOptimizer.js"></script>
+    <script src="../../assets/js/financeToolPage.js"></script>
+    <script src="../../assets/js/dashboardConfig.js"></script>
+    <script src="../../assets/js/dashboardSend.js"></script>
+    <script>
+      (function () {
+        function isDataset(ds) {
+          return !!ds && typeof ds === "object" && Array.isArray(ds.labels) && Array.isArray(ds.values) && ds.labels.length === ds.values.length;
+        }
+        function normalizeDataset(ds, fallbackLabel) {
+          if (!isDataset(ds)) return null;
+          return { labels: ds.labels.slice(), label: ds.label || fallbackLabel || "Serie", values: ds.values.slice() };
+        }
+        function resolveToolName() {
+          var p = new URLSearchParams(window.location.search);
+          var q = p.get("tool");
+          if (q) return q;
+          var h = document.querySelector("#tool-content h1, #tool-content h2, #tool-content .fx-calculator-head h2");
+          return (h && h.textContent && h.textContent.trim()) ? h.textContent.trim() : "Herramienta";
+        }
+        function readDatasets(toolName) {
+          if (window.ZYVOLA_DASHBOARD_DATASETS && typeof window.ZYVOLA_DASHBOARD_DATASETS === "object") return window.ZYVOLA_DASHBOARD_DATASETS;
+          var rt = window.FINANCE_TOOL_RUNTIME;
+          if (rt && typeof rt.getDashboardDatasets === "function") return rt.getDashboardDatasets(toolName) || {};
+          return {};
+        }
+        function closeModal(overlay) {
+          if (!overlay) return;
+          overlay.style.animation = "dbFadeIn 180ms ease reverse";
+          setTimeout(function () { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 160);
+        }
+        function showToast(msg) {
+          var t = document.createElement("div");
+          t.style.cssText = "position:fixed;bottom:1.5rem;right:1.5rem;z-index:3000;background:var(--gold,#c8a84b);color:#fff;font-family:var(--font-tech,sans-serif);font-size:0.82rem;letter-spacing:0.04em;padding:0.75rem 1.1rem;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.18);animation:dbSlideUp 240ms cubic-bezier(.22,1,.36,1)";
+          t.textContent = msg;
+          document.body.appendChild(t);
+          setTimeout(function () { if (t.parentNode) t.parentNode.removeChild(t); }, 2800);
+        }
+
+        window.ZyvolaOpenSendModal = function () {
+          var key = "zyv_dashboards";
+          var dashboards = [];
+          try { var raw = localStorage.getItem(key); dashboards = raw ? (JSON.parse(raw) || []) : []; if (!Array.isArray(dashboards)) dashboards = []; } catch (_e) { dashboards = []; }
+
+          var overlay = document.createElement("div");
+          overlay.className = "db-modal-overlay";
+          overlay.addEventListener("click", function (e) { if (e.target === overlay) closeModal(overlay); });
+
+          var modal = document.createElement("div");
+          modal.className = "db-modal db-modal-sm";
+          modal.style.width = "min(90vw, 420px)";
+
+          var header = document.createElement("div");
+          header.className = "db-modal-header";
+          var title = document.createElement("h2");
+          title.textContent = "Enviar a dashboard";
+          var closeBtn = document.createElement("button");
+          closeBtn.className = "db-modal-close";
+          closeBtn.innerHTML = "&times;";
+          closeBtn.setAttribute("aria-label", "Cerrar");
+          closeBtn.addEventListener("click", function () { closeModal(overlay); });
+          header.appendChild(title);
+          header.appendChild(closeBtn);
+
+          var body = document.createElement("div");
+          body.className = "db-modal-body";
+          body.style.paddingTop = "0.2rem";
+
+          if (!dashboards.length) {
+            var empty = document.createElement("p");
+            empty.style.cssText = "margin:0;color:rgba(68,83,106,0.6);font-style:italic;text-align:center;padding:1rem 0";
+            empty.textContent = "No hay dashboards creados todavía.";
+            body.appendChild(empty);
+          } else {
+            var lbl = document.createElement("p");
+            lbl.className = "db-modal-label";
+            lbl.textContent = "Selecciona un dashboard:";
+            body.appendChild(lbl);
+
+            var list = document.createElement("div");
+            list.style.cssText = "display:grid;gap:0.45rem;max-height:260px;overflow-y:auto";
+
+            dashboards.forEach(function (db, idx) {
+              var btn = document.createElement("button");
+              btn.type = "button";
+              btn.style.cssText = "appearance:none;width:100%;text-align:left;border:1px solid var(--diamond,rgba(180,160,100,0.2));border-radius:8px;background:rgba(255,255,255,0.9);color:var(--marble,#44536a);font-family:var(--font-tech,sans-serif);font-size:0.88rem;padding:0.65rem 0.85rem;cursor:pointer;transition:border-color 180ms,background 180ms";
+              btn.textContent = db && db.nombre ? db.nombre : "Dashboard " + (idx + 1);
+              btn.addEventListener("mouseenter", function () { btn.style.borderColor = "var(--gold,#c8a84b)"; btn.style.background = "rgba(200,170,100,0.08)"; });
+              btn.addEventListener("mouseleave", function () { btn.style.borderColor = "var(--diamond,rgba(180,160,100,0.2))"; btn.style.background = "rgba(255,255,255,0.9)"; });
+              btn.addEventListener("click", function () {
+                closeModal(overlay);
+                var target = dashboards[idx];
+                if (!target.data || typeof target.data !== "object" || Array.isArray(target.data)) target.data = {};
+                var toolName = resolveToolName();
+                var datasets = readDatasets(toolName);
+                var keys = Object.keys(datasets || {});
+                var savedCount = 0;
+                // Remove previous datasets from this same tool (prefix match)
+                var prefix = toolName + "__";
+                Object.keys(target.data).forEach(function (k) {
+                  if (k.indexOf(prefix) === 0) delete target.data[k];
+                });
+                for (var i = 0; i < keys.length; i++) {
+                  var norm = normalizeDataset(datasets[keys[i]], toolName + " - " + keys[i]);
+                  if (!norm) continue;
+                  target.data[prefix + keys[i]] = norm;
+                  savedCount++;
+                }
+                try { localStorage.setItem(key, JSON.stringify(dashboards)); } catch (_e2) { showToast("Error al guardar."); return; }
+                if (savedCount > 0) showToast("Enviado a «" + (target.nombre || "Dashboard") + "»");
+                else showToast("Esta herramienta aún no generó datos para dashboard.");
+              });
+              list.appendChild(btn);
+            });
+            body.appendChild(list);
+          }
+
+          modal.appendChild(header);
+          modal.appendChild(body);
+          overlay.appendChild(modal);
+          document.body.appendChild(overlay);
+        };
+      })();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zyvola Documentos | Flujo Financiero de Archivos</title>
+    <meta
+      name="description"
+      content="Zyvola Documentos centraliza importación, procesamiento automático e informes financieros basados en archivos."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://zyvola.com/documents" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../assets/css/styles.css" />
+    <link rel="stylesheet" href="../assets/css/documents.css" />
+  </head>
+    <body data-page="documentos" data-category="documentos" data-depth="1">
+    <div id="site-header"></div>
+
+    <main class="main">
+      <nav class="breadcrumbs" aria-label="Miga de pan">
+        <div class="container">
+          <ol>
+            <li><a href="../index.html">Inicio</a></li>
+            <li aria-current="page">Documentos</li>
+          </ol>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <div class="container hero-grid reveal">
+          <p id="category-kicker" class="kicker">Categoría / Documentos</p>
+          <h1 id="category-title">Zyvola Documentos</h1>
+          <p id="category-description" class="lead"></p>
+          <p class="muted">
+            Sección documental enfocada en carga de archivos, procesamiento automático y generación de salidas financieras.
+          </p>
+        </div>
+      </section>
+
+        <!-- ── Document processor ── -->
+        <section class="section">
+          <div class="container reveal">
+            <div class="doc-panel">
+
+              <!-- Upload -->
+              <div>
+                <p class="doc-section-title">Cargar archivo</p>
+                <label class="doc-upload-zone" id="doc-upload-zone" aria-label="Zona de carga de archivos">
+                  <input type="file" id="doc-file-input" accept=".txt,.md,.pdf,.docx,.csv,.json,.xlsx,.xls" aria-label="Seleccionar archivo" />
+                  <span class="doc-upload-icon" aria-hidden="true">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </span>
+                  <p class="doc-upload-title">Arrastra o haz clic para cargar</p>
+                  <p class="doc-upload-sub">Selecciona un archivo de tu dispositivo</p>
+                  <div class="doc-type-pills">
+                    <span class="doc-type-pill">txt</span>
+                    <span class="doc-type-pill">md</span>
+                    <span class="doc-type-pill">csv</span>
+                    <span class="doc-type-pill">json</span>
+                    <span class="doc-type-pill">xlsx</span>
+                    <span class="doc-type-pill">xls</span>
+                    <span class="doc-type-pill">pdf</span>
+                    <span class="doc-type-pill">docx</span>
+                  </div>
+                </label>
+              </div>
+
+              <!-- Status -->
+              <div id="doc-status" class="doc-status hidden" role="status" aria-live="polite">
+                <span class="doc-status-dot"></span>
+                <span id="doc-status-text"></span>
+              </div>
+
+              <!-- Actions -->
+              <div class="doc-actions" id="doc-actions" style="display:none;">
+                <button class="doc-action-btn secondary" id="doc-btn-save" type="button" disabled>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  Guardar
+                </button>
+                <button class="doc-action-btn secondary" id="doc-btn-export" type="button" disabled>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  Exportar análisis
+                </button>
+                <button class="doc-action-btn secondary" id="doc-btn-sync-finance" type="button" disabled>
+                  Importar a finanzas
+                </button>
+                <button class="doc-action-btn danger" id="doc-btn-clear" type="button">
+                  Limpiar
+                </button>
+                <button class="doc-action-btn secondary" id="doc-btn-open-dashboard" type="button" style="display:none;">
+                  Abrir dashboard generado
+                </button>
+              </div>
+
+              <hr class="doc-divider" id="doc-preview-divider" style="display:none;" />
+
+              <!-- Preview -->
+              <div id="doc-preview-wrap" style="display:none;">
+                <p class="doc-section-title">Vista previa</p>
+                <div id="preview"></div>
+              </div>
+
+              <hr class="doc-divider" />
+
+              <!-- Saved documents -->
+              <div>
+                <p class="doc-section-title">Documentos guardados</p>
+                <div id="doc-saved-list"></div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="../assets/js/pages.js"></script>
+    <script src="../assets/js/site.js"></script>
+    <script src="../assets/js/charts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+    <script src="../assets/js/documentProcessor.js"></script>
+      <script>
+      (function () {
+        var dp = window.ZyvolaDocProcessor;
+        if (!dp) return;
+
+        var fileInput      = document.getElementById('doc-file-input');
+        var uploadZone     = document.getElementById('doc-upload-zone');
+        var statusEl       = document.getElementById('doc-status');
+        var statusText     = document.getElementById('doc-status-text');
+        var actionsEl      = document.getElementById('doc-actions');
+        var btnSave        = document.getElementById('doc-btn-save');
+        var btnExport      = document.getElementById('doc-btn-export');
+        var btnSyncFinance = document.getElementById('doc-btn-sync-finance');
+        var btnClear       = document.getElementById('doc-btn-clear');
+        var btnOpenDashboard = document.getElementById('doc-btn-open-dashboard');
+        var previewWrap    = document.getElementById('doc-preview-wrap');
+        var previewDivider = document.getElementById('doc-preview-divider');
+        var savedListEl    = document.getElementById('doc-saved-list');
+
+        var currentProcessed = null;
+        var currentMeta      = null;
+        var generatedDashboardId = '';
+        var financeImportable = false;
+
+        function canImportToFinance(processed) {
+          if (!processed || !processed.type) return false;
+          return processed.type === 'csv' || processed.type === 'excel' || processed.type === 'json';
+        }
+
+        /* ── status helpers ── */
+        function setStatus(state, msg) {
+          statusEl.className = 'doc-status ' + state;
+          statusText.textContent = msg;
+          statusEl.classList.remove('hidden');
+        }
+
+        function clearStatus() {
+          statusEl.classList.add('hidden');
+        }
+
+        /* ── saved list ── */
+        function renderSavedList() {
+          var docs = dp.loadSavedDocuments();
+          if (!docs.length) {
+            savedListEl.innerHTML = '<p class="doc-empty">No hay documentos guardados todavía.</p>';
+            return;
+          }
+          savedListEl.innerHTML = '<div class="doc-saved-list">' +
+            docs.slice().reverse().map(function (d) {
+              var type = (d.data && d.data.type) || '—';
+              var date = d.savedAt ? new Date(d.savedAt).toLocaleDateString('es-ES') : '';
+              return (
+                '<div class="doc-saved-item">' +
+                  '<span class="doc-saved-name">' + d.name + '</span>' +
+                  '<span class="doc-saved-type">' + type + '</span>' +
+                  '<span class="doc-saved-date">' + date + '</span>' +
+                  '<button class="doc-saved-del" type="button" data-doc-id="' + d.id + '" aria-label="Eliminar documento" title="Eliminar">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                  '</button>' +
+                '</div>'
+              );
+            }).join('') +
+          '</div>';
+
+          savedListEl.querySelectorAll('[data-doc-id]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              dp.deleteSavedDocument(btn.getAttribute('data-doc-id'));
+              renderSavedList();
+            });
+          });
+        }
+
+        /* ── reset UI ── */
+        function resetUI() {
+          currentProcessed = null;
+          currentMeta      = null;
+          generatedDashboardId = '';
+          financeImportable = false;
+          actionsEl.style.display    = 'none';
+          previewWrap.style.display  = 'none';
+          previewDivider.style.display = 'none';
+          btnOpenDashboard.style.display = 'none';
+          document.getElementById('preview').innerHTML = '';
+          btnSave.disabled     = true;
+          btnExport.disabled   = true;
+          btnSyncFinance.disabled = true;
+          fileInput.value      = '';
+          clearStatus();
+        }
+
+        /* ── process file ── */
+        function handleFile(file) {
+          if (!file) return;
+          var type = dp.detectDocumentType(file.name);
+
+          if (type === 'unknown') {
+            setStatus('error', 'Formato no compatible: ' + file.name.split('.').pop().toLowerCase());
+            return;
+          }
+
+          setStatus('loading', 'Leyendo ' + file.name + '\u2026');
+          actionsEl.style.display    = 'none';
+          previewWrap.style.display  = 'none';
+          previewDivider.style.display = 'none';
+
+          dp.readUploadedFile(file).then(function (result) {
+            setStatus('loading', 'Procesando\u2026');
+            return dp.processDocument(result.raw, result.type).then(function (processed) {
+              currentProcessed = processed;
+              currentMeta      = { filename: result.filename, size: result.size };
+
+              dp.renderDocumentPreview(processed, currentMeta);
+
+              previewDivider.style.display = '';
+              previewWrap.style.display    = '';
+              actionsEl.style.display      = 'flex';
+              btnSave.disabled             = false;
+              btnExport.disabled           = false;
+              financeImportable            = canImportToFinance(processed);
+              btnSyncFinance.disabled      = !financeImportable;
+
+              if (processed.type === 'excel' && typeof dp.createDashboardFromExcel === 'function') {
+                var created = dp.createDashboardFromExcel(result.filename, processed);
+                if (created && created.created) {
+                  generatedDashboardId = created.id;
+                  btnOpenDashboard.style.display = '';
+                  setStatus('ok', 'Excel analizado y dashboard creado: ' + created.name + ' (' + created.datasets + ' series).');
+                } else {
+                  generatedDashboardId = '';
+                  btnOpenDashboard.style.display = 'none';
+                  setStatus('ok', 'Excel analizado. ' + (created && created.reason ? created.reason : 'No se generó dashboard automático.'));
+                }
+              } else {
+                generatedDashboardId = '';
+                btnOpenDashboard.style.display = 'none';
+                setStatus('ok', 'Listo \u2014 ' + file.name + ' \u00b7 ' + dp.fmtSize(file.size));
+              }
+            });
+          }).catch(function (err) {
+            setStatus('error', err.message || 'Error al procesar el archivo.');
+          });
+        }
+
+        /* ── file input ── */
+        fileInput.addEventListener('change', function () {
+          if (fileInput.files && fileInput.files[0]) handleFile(fileInput.files[0]);
+        });
+
+        /* ── drag & drop ── */
+        uploadZone.addEventListener('dragover', function (e) {
+          e.preventDefault();
+          uploadZone.classList.add('drag-over');
+        });
+        uploadZone.addEventListener('dragleave', function () {
+          uploadZone.classList.remove('drag-over');
+        });
+        uploadZone.addEventListener('drop', function (e) {
+          e.preventDefault();
+          uploadZone.classList.remove('drag-over');
+          var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+          if (file) handleFile(file);
+        });
+
+        /* ── action buttons ── */
+        btnSave.addEventListener('click', function () {
+          if (!currentProcessed) return;
+          var name = currentMeta && currentMeta.filename ? currentMeta.filename : 'documento';
+          dp.saveDocument(name, currentProcessed);
+          setStatus('ok', 'Guardado: ' + name);
+          btnSave.disabled = true;
+          renderSavedList();
+        });
+
+        btnClear.addEventListener('click', resetUI);
+
+        btnExport.addEventListener('click', function () {
+          if (!currentProcessed) return;
+          dp.exportAnalysisAsJSON(currentProcessed, currentMeta);
+        });
+
+        btnSyncFinance.addEventListener('click', function () {
+          if (!currentProcessed || !financeImportable || typeof dp.importToFinanceRuntime !== 'function') return;
+          var report = dp.importToFinanceRuntime(currentProcessed, currentMeta, { mode: 'replace-imported' });
+          if (!report || !report.imported) {
+            setStatus('error', (report && report.reason) ? report.reason : 'No se pudieron importar movimientos a Finanzas.');
+            return;
+          }
+          setStatus('ok', 'Importación completada: ' + report.imported + ' movimiento(s) en Finanzas.' + (report.ignoredRows ? ' Filas omitidas: ' + report.ignoredRows + '.' : ''));
+        });
+
+        btnOpenDashboard.addEventListener('click', function () {
+          if (!generatedDashboardId) return;
+          window.location.href = '../finance/dashboard/index.html?id=' + encodeURIComponent(generatedDashboardId);
+        });
+
+        /* ── init ── */
+        renderSavedList();
+      })();
+      </script>
+  </body>
+</html>

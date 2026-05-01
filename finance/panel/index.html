@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel | Zyvola</title>
+    <meta name="description" content="Panel modular premium de Zyvola con plantillas inteligentes, tarjetas dinámicas y auto-estructura." />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://zyvola.com/finance/panel" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- PWA -->
+    <meta name="theme-color" content="#b8963e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Zyvola" />
+    <link rel="manifest" href="../../manifest.json" />
+    <link rel="apple-touch-icon" href="../../assets/icons/icono_calculadora.png" />
+    <link rel="stylesheet" href="../../assets/css/styles.css" />
+    <link rel="stylesheet" href="../../panel/panel.css" />
+  </head>
+  <body data-page="panel" data-category="finance" data-depth="2">
+    <div id="site-header"></div>
+    <div id="finance-tools-menu"></div>
+
+    <main class="main">
+      <section class="section">
+        <div class="container reveal">
+          <div id="zv-workspace-root"></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <!-- Catálogos y motor de herramientas (lógica original intacta) -->
+    <script src="../../assets/js/pages.js"></script>
+    <script src="../../assets/js/financeModuleBlueprints.js"></script>
+    <script src="../../assets/js/financeModuleEngine.js"></script>
+    <script src="../../assets/js/site.js"></script>
+    <script src="../../assets/js/charts.js"></script>
+    <script src="../../assets/js/financeToolRuntime.js"></script>
+    <script src="../../assets/js/portfolioOptimizer.js"></script>
+
+    <!-- Nuevo sistema modular de panel -->
+    <script src="../../templates/panelTemplates.js"></script>
+    <script src="../../panel/PanelGrid.js"></script>
+    <script src="../../panel/PanelTemplateEngine.js"></script>
+    <script src="../../components/ToolCard.js"></script>
+    <script src="../../components/ToolCardResizer.js"></script>
+    <script src="../../components/ToolCardMover.js"></script>
+    <script src="../../charts/AutoChartGenerator.js"></script>
+    <script src="../../panel/PanelWorkspace.js"></script>
+
+    <script>
+      (function () {
+        var root = document.getElementById("zv-workspace-root");
+        if (!root || !window.ZyvolaPanelWorkspace) return;
+        window.__zvWorkspace = new window.ZyvolaPanelWorkspace(root).mount();
+      })();
+      /* Registro del Service Worker (requiere HTTPS o localhost) */
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("../../sw.js", { scope: "../../" }).catch(function () {});
+      }
+    </script>
+  </body>
+</html>

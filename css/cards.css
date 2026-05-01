@@ -1,0 +1,26 @@
+.pc-block {
+  border-radius: 16px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06) !important;
+  background: #FFFFFF !important;
+  transition: width 220ms ease, height 220ms ease, left 220ms ease, top 220ms ease;
+}
+
+.pc-block.is-selected-card {
+  outline: 1px solid rgba(74, 144, 226, 0.45);
+  outline-offset: 2px;
+}
+
+.pc-block.is-dragging-card {
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12) !important;
+}
+
+.pc-block-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pc-runtime {
+  width: 100%;
+  height: 100%;
+}

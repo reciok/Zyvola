@@ -1,0 +1,28 @@
+#folio-sheet {
+  width: 1000px !important;
+  max-width: 1000px !important;
+  margin: 0 auto;
+}
+
+.folio-slots {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  display: none;
+}
+
+.folio-slot-fixed {
+  position: absolute;
+  border-radius: 12px;
+  border: 1px solid #E5E5E5;
+  background: #FAFAFA;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: border-color 150ms ease, box-shadow 150ms ease, background 150ms ease;
+}
+
+.folio-slot-fixed.is-active {
+  border-color: #4A90E2;
+  box-shadow: 0 2px 8px rgba(74, 144, 226, 0.2);
+  background: #F7FBFF;
+}

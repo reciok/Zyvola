@@ -1,0 +1,53 @@
+.folio-top-menu {
+  position: fixed;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1200;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(220, 220, 220, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  padding: 8px;
+}
+
+.folio-menu-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.folio-menu-btn,
+.folio-panel-btn {
+  appearance: none;
+  border: 1px solid #E8E8E8;
+  background: #FFFFFF;
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #223045;
+  cursor: pointer;
+}
+
+.folio-menu-btn:hover,
+.folio-panel-btn:hover {
+  border-color: #DADADA;
+  background: #FCFCFC;
+}
+
+.folio-floating-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  display: none;
+  width: 220px;
+  background: #FFFFFF;
+  border: 1px solid #ECECEC;
+  border-radius: 12px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  padding: 8px;
+  gap: 6px;
+}
+
+.folio-floating-panel.open {
+  display: grid;
+}
