@@ -4,8 +4,8 @@
  * network-first (con fallback a caché) para páginas HTML.
  * ============================================================ */
 
-const CACHE_NAME = "zyvola-v1";
-const CACHE_PAGES = "zyvola-pages-v1";
+const CACHE_NAME = "zyvola-v3";
+const CACHE_PAGES = "zyvola-pages-v3";
 
 /* Assets que se pre-cachean al instalar el SW */
 const PRECACHE_ASSETS = [
@@ -84,17 +84,19 @@ self.addEventListener("fetch", function (event) {
     return;
   }
 
-  /* Assets JS/CSS/imágenes: cache-first */
+  /* Assets JS/CSS/imágenes: stale-while-revalidate
+     (sirve caché al instante pero refresca en segundo plano para que
+     el móvil reciba updates sin tener que limpiar caché manualmente). */
   event.respondWith(
     caches.match(req).then(function (cached) {
-      if (cached) return cached;
-      return fetch(req).then(function (res) {
+      var network = fetch(req).then(function (res) {
         if (res && res.status === 200) {
           var clone = res.clone();
           caches.open(CACHE_NAME).then(function (cache) { cache.put(req, clone); });
         }
         return res;
-      });
+      }).catch(function () { return cached; });
+      return cached || network;
     })
   );
 });
