@@ -1,7 +1,15 @@
 (function () {
-  /* ── Marble background (inline SVG so feTurbulence filters render) ── */
+  /* ── Marble background (inline SVG so feTurbulence filters render) ──
+     Skip en móvil / pantallas pequeñas y cuando el usuario prefiere
+     menos animación: el SVG con feTurbulence + Gaussian blur es uno de
+     los mayores costes de pintado en GPUs modestas. */
   (function injectMarble() {
     if (document.getElementById("marble-bg")) return;
+    try {
+      const isSmall = window.matchMedia("(max-width: 860px)").matches;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (isSmall || reduced) return;
+    } catch (_) { /* matchMedia missing → continuamos */ }
     const ns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(ns, "svg");
     svg.id = "marble-bg";

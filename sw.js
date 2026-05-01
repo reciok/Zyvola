@@ -4,8 +4,8 @@
  * network-first (con fallback a caché) para páginas HTML.
  * ============================================================ */
 
-const CACHE_NAME = "zyvola-v3";
-const CACHE_PAGES = "zyvola-pages-v3";
+const CACHE_NAME = "zyvola-v4";
+const CACHE_PAGES = "zyvola-pages-v4";
 
 /* Assets que se pre-cachean al instalar el SW */
 const PRECACHE_ASSETS = [

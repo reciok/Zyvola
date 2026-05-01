@@ -74,6 +74,11 @@ body {
   height: 100%;
   z-index: -1;
   pointer-events: none;
+  /* Aisla el repintado del SVG y promueve a capa propia para que no
+     dispare repaints del documento al hacer scroll/scrollar contenido. */
+  contain: strict;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 /* Móvil: el SVG con feTurbulence + filtros es muy pesado.

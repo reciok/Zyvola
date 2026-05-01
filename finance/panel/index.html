@@ -10,9 +10,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
       href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
+      onload="this.onload=null;this.rel='stylesheet'"
     />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" /></noscript>
     <!-- PWA -->
     <meta name="theme-color" content="#b8963e" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -38,31 +41,31 @@
 
     <div id="site-footer"></div>
 
-    <!-- Catálogos y motor de herramientas (lógica original intacta) -->
-    <script src="../../assets/js/pages.js"></script>
-    <script src="../../assets/js/financeModuleBlueprints.js"></script>
-    <script src="../../assets/js/financeModuleEngine.js"></script>
-    <script src="../../assets/js/site.js"></script>
-    <script src="../../assets/js/charts.js"></script>
-    <script src="../../assets/js/financeToolRuntime.js"></script>
-    <script src="../../assets/js/portfolioOptimizer.js"></script>
+    <!-- Catálogos y motor de herramientas (lo se ejecuta tras parse via defer) -->
+    <script defer src="../../assets/js/pages.js"></script>
+    <script defer src="../../assets/js/financeModuleBlueprints.js"></script>
+    <script defer src="../../assets/js/financeModuleEngine.js"></script>
+    <script defer src="../../assets/js/site.js"></script>
+    <script defer src="../../assets/js/charts.js"></script>
+    <script defer src="../../assets/js/financeToolRuntime.js"></script>
+    <script defer src="../../assets/js/portfolioOptimizer.js"></script>
 
     <!-- Nuevo sistema modular de panel -->
-    <script src="../../templates/panelTemplates.js"></script>
-    <script src="../../panel/PanelGrid.js"></script>
-    <script src="../../panel/PanelTemplateEngine.js"></script>
-    <script src="../../components/ToolCard.js"></script>
-    <script src="../../components/ToolCardResizer.js"></script>
-    <script src="../../components/ToolCardMover.js"></script>
-    <script src="../../charts/AutoChartGenerator.js"></script>
-    <script src="../../panel/PanelWorkspace.js"></script>
+    <script defer src="../../templates/panelTemplates.js"></script>
+    <script defer src="../../panel/PanelGrid.js"></script>
+    <script defer src="../../panel/PanelTemplateEngine.js"></script>
+    <script defer src="../../components/ToolCard.js"></script>
+    <script defer src="../../components/ToolCardResizer.js"></script>
+    <script defer src="../../components/ToolCardMover.js"></script>
+    <script defer src="../../charts/AutoChartGenerator.js"></script>
+    <script defer src="../../panel/PanelWorkspace.js"></script>
 
     <script>
-      (function () {
+      document.addEventListener("DOMContentLoaded", function () {
         var root = document.getElementById("zv-workspace-root");
         if (!root || !window.ZyvolaPanelWorkspace) return;
         window.__zvWorkspace = new window.ZyvolaPanelWorkspace(root).mount();
-      })();
+      });
       /* Registro del Service Worker (requiere HTTPS o localhost) */
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker.register("../../sw.js", { scope: "../../" }).then(function (reg) {
