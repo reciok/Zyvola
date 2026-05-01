@@ -1378,10 +1378,25 @@ h3 {
 
 @media (max-width: 860px) {
   .nav-shell {
-    align-items: start;
+    align-items: center;
     min-height: 58px;
     padding-block: 0.7rem;
+    /* Deja espacio a la izquierda para el botón hamburguesa del panel */
+    padding-left: max(1.2rem, env(safe-area-inset-left));
   }
+
+  /* En el panel el hamburguesa está fijo a la izquierda:  
+     centramos la marca desplazando su bloque al centro real */
+  body[data-page="panel"] .nav-shell {
+    justify-content: center;
+  }
+  body[data-page="panel"] .brand {
+    margin: 0 auto;
+    text-align: center;
+  }
+  /* Ocultar el toggle del menú principal en el panel (no hace falta) */
+  body[data-page="panel"] .mobile-toggle { display: none; }
+  body[data-page="panel"] .nav-list     { display: none; }
 
   .hero-grid {
     max-width: 100%;
