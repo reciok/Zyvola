@@ -447,17 +447,108 @@ body[data-page="panel"] .main > .section > .container {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* ── Botón hamburguesa móvil + drawer off-canvas ───────── */
+.zv-mobile-nav-toggle {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 1100;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--zv-accent);
+  color: #fff;
+  border: 0;
+  box-shadow: 0 6px 18px rgba(184, 150, 62, 0.35);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+.zv-mobile-nav-toggle:active { transform: scale(0.96); }
+
+.zv-mobile-nav-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 18, 12, 0.45);
+  z-index: 950;
+  opacity: 0;
+  transition: opacity .18s ease;
+}
+
 @media (max-width: 860px) {
-  /* Panel actions en horizontal en la sidebar sticky */
+  /* Mostrar botón hamburguesa solo en panel */
+  body[data-page="panel"] .zv-mobile-nav-toggle {
+    display: inline-flex;
+  }
+
+  /* Sidebars se convierten en drawer off-canvas */
+  body[data-page="panel"] .finance-sections-nav,
+  body[data-page="panel"] .finance-tools-nav {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    bottom: 0 !important;
+    height: 100dvh !important;
+    width: 78vw !important;
+    max-width: 320px !important;
+    margin: 0 !important;
+    padding-top: 60px !important; /* deja sitio al botón hamburguesa */
+    background: #fbfaf5 !important;
+    border-right: 1px solid var(--zv-border) !important;
+    border-bottom: 0 !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12) !important;
+    backdrop-filter: none !important;
+    transform: translateX(-100%);
+    transition: transform .22s ease;
+    z-index: 1000 !important;
+    overflow-y: auto;
+  }
+  body[data-page="panel"] .finance-tools-nav {
+    /* La secundaria se desliza ligeramente más a la derecha */
+    width: 86vw !important;
+    max-width: 340px !important;
+    z-index: 1001 !important;
+  }
+
+  body[data-page="panel"].zv-mobile-nav-open .finance-sections-nav,
+  body[data-page="panel"].zv-mobile-nav-open .finance-tools-nav {
+    transform: translateX(0);
+  }
+
+  body[data-page="panel"].zv-mobile-nav-open .zv-mobile-nav-backdrop {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Listas de la sidebar en una sola columna en el drawer */
+  body[data-page="panel"] .finance-sections-list,
+  body[data-page="panel"] .finance-tools-list {
+    grid-template-columns: 1fr !important;
+    padding-inline: 0.5rem !important;
+  }
+
+  /* Quitar padding-left que reserva espacio para sidebar fija */
+  body[data-page="panel"].has-finance-sidebar .main,
+  body[data-page="panel"].has-finance-sidebar.has-finance-secondary .main {
+    padding-left: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  /* Acciones del panel (Export/Borrar) en columna dentro del drawer */
   .finance-sections-nav .finance-panel-actions {
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: flex-start;
     padding: 8px 12px 10px;
-    margin: 4px 0 6px;
-    border-bottom: 1px solid var(--zv-accent);
-    border-right: 0;
+    margin: 4px 8px 8px;
   }
+
+  /* Optimizar rendimiento: quitar fondo SVG pesado en móvil */
+  #marble-bg { display: none !important; }
+  body { background-attachment: scroll !important; }
+  body[data-page="panel"] { background: #f7f3ea !important; }
 }
 
 @media (max-width: 540px) {
@@ -475,19 +566,22 @@ body[data-page="panel"] .main > .section > .container {
   .zv-card__body .fx-results-grid {
     grid-template-columns: repeat(2, 1fr) !important;
   }
-  /* Modal: altura total en móvil */
+  /* Modal: hoja inferior */
   .zv-modal-overlay { padding: 0; align-items: flex-end; }
   .zv-modal {
     border-radius: 16px 16px 0 0;
     max-height: 92dvh;
     width: 100%;
   }
-  /* Botones de tarjeta un poco más grandes para tacto */
+  /* Botones de tarjeta más grandes para tacto */
   .zv-card__btn { width: 34px; height: 34px; font-size: 15px; }
   /* Cabecera de card más alta */
   .zv-card__head { padding: 12px 14px; }
   /* Contenedor con padding seguro */
   body[data-page="panel"] .main > .section > .container { padding: 0 10px; }
+
+  /* Más espacio para que el botón hamburguesa no choque con header del sitio */
+  body[data-page="panel"] .main { padding-top: 8px; }
 }
 
 /* ── Impresión / Exportar a PDF ──────────────────────────

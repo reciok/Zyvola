@@ -38,7 +38,43 @@
     this._render();
     this._bindSidebar();
     this._injectSidebarActions();
+    this._injectMobileNavToggle();
     return this;
+  };
+
+  /* ── Toggle hamburguesa para abrir/cerrar el menú lateral en móvil ── */
+  PanelWorkspace.prototype._injectMobileNavToggle = function () {
+    if (document.getElementById("zv-mobile-nav-toggle")) return;
+
+    var btn = document.createElement("button");
+    btn.id = "zv-mobile-nav-toggle";
+    btn.type = "button";
+    btn.className = "zv-mobile-nav-toggle";
+    btn.setAttribute("aria-label", "Abrir menú de herramientas");
+    btn.innerHTML =
+      '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+    document.body.appendChild(btn);
+
+    var backdrop = document.createElement("div");
+    backdrop.className = "zv-mobile-nav-backdrop";
+    document.body.appendChild(backdrop);
+
+    function close() { document.body.classList.remove("zv-mobile-nav-open"); }
+    function open()  { document.body.classList.add("zv-mobile-nav-open"); }
+
+    btn.addEventListener("click", function () {
+      if (document.body.classList.contains("zv-mobile-nav-open")) close();
+      else open();
+    });
+    backdrop.addEventListener("click", close);
+
+    // Cerrar al pulsar una herramienta
+    document.addEventListener("click", function (ev) {
+      if (!document.body.classList.contains("zv-mobile-nav-open")) return;
+      if (ev.target.closest(".finance-tool-link, .finance-section-button, .finance-panel-actions__btn")) {
+        setTimeout(close, 50);
+      }
+    });
   };
 
   /* ── Sidebar (finance-tools-menu) ──────────────────────── */

@@ -76,6 +76,13 @@ body {
   pointer-events: none;
 }
 
+/* Móvil: el SVG con feTurbulence + filtros es muy pesado.
+   Lo ocultamos para evitar lag y dejamos solo el degradado del body. */
+@media (max-width: 860px) {
+  #marble-bg { display: none !important; }
+  body { background-attachment: scroll !important; }
+}
+
 a {
   color: inherit;
   text-decoration: none;
