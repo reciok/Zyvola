@@ -536,36 +536,32 @@ body[data-page="panel"] .main > .section > .container {
     border-radius: 0 !important;
   }
 
-  /* ── Sidebar: mostrar nombres en lugar de solo iconos ── */
-  body[data-page="panel"] .finance-section-link {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    padding: 11px 14px;
-    text-align: left;
-    border-radius: 8px;
+  /* ── Sidebar móvil: solo nombres, sin iconos ── */
+  body[data-page="panel"] .finance-sections-nav .finance-section-icon {
+    display: none !important;
   }
-  body[data-page="panel"] .finance-section-icon {
-    flex-shrink: 0;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  body[data-page="panel"] .finance-sections-nav .finance-section-link {
+    justify-content: flex-start !important;
+    padding: 13px 16px !important;
+    min-height: 50px !important;
+    border-left: 2px solid transparent !important;
+    border-bottom: 1px solid rgba(184,150,62,0.10);
   }
-  /* Nombre de la sección (de data-section-label) */
-  body[data-page="panel"] .finance-section-link::after {
-    content: attr(data-section-label);
-    font-size: 13px;
-    font-weight: 600;
-    color: #1f1c14;
+  body[data-page="panel"] .finance-sections-nav .finance-section-link::after {
+    content: attr(data-section-label) !important;
+    display: block !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #1f1c14 !important;
     letter-spacing: 0.01em;
-    white-space: nowrap;
+    pointer-events: none;
   }
-  body[data-page="panel"] .finance-section-link.active::after {
-    color: var(--zv-accent);
+  body[data-page="panel"] .finance-sections-nav .finance-section-link.active::after {
+    color: var(--zv-accent) !important;
+  }
+  body[data-page="panel"] .finance-sections-nav .finance-section-link.active {
+    border-left-color: var(--zv-accent) !important;
+    background: rgba(184,150,62,0.07) !important;
   }
 
   /* Acciones del panel (Export/Borrar) en columna dentro del drawer */

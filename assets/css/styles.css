@@ -1385,18 +1385,23 @@ h3 {
     padding-left: max(1.2rem, env(safe-area-inset-left));
   }
 
-  /* En el panel el hamburguesa está fijo a la izquierda:  
-     centramos la marca desplazando su bloque al centro real */
+  /* En el panel el hamburguesa está fijo a la izquierda (42px + 12px margen):
+     ocultamos el toggle nativo y centramos la marca con padding compensatorio */
+  body[data-page="panel"] .mobile-toggle { display: none !important; }
+  body[data-page="panel"] .nav-list      { display: none !important; }
+  body[data-page="panel"] .nav-actions   { display: none !important; }
   body[data-page="panel"] .nav-shell {
-    justify-content: center;
+    justify-content: center !important;
+    /* 62px left = 12px margen hamburguesa + 42px botón + 8px gap
+       mismo espacio a la derecha para centrar visualmente */
+    padding-left: 62px !important;
+    padding-right: 62px !important;
   }
   body[data-page="panel"] .brand {
-    margin: 0 auto;
+    flex: 0 0 auto;
     text-align: center;
+    font-size: 1.05rem;
   }
-  /* Ocultar el toggle del menú principal en el panel (no hace falta) */
-  body[data-page="panel"] .mobile-toggle { display: none; }
-  body[data-page="panel"] .nav-list     { display: none; }
 
   .hero-grid {
     max-width: 100%;
