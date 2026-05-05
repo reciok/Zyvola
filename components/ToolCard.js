@@ -73,25 +73,6 @@
               '<span class="zv-card__menu-ico">⚙</span>Opciones avanzadas' +
             '</button>' +
             '<div class="zv-card__menu-sep" role="separator"></div>' +
-            '<div class="zv-card__menu-section">' +
-              '<span class="zv-card__menu-label">Tamaño</span>' +
-              '<select class="zv-card__size" aria-label="Tamaño tarjeta">' +
-                '<option value="S">S</option>' +
-                '<option value="M">M</option>' +
-                '<option value="L">L</option>' +
-                '<option value="XL">XL</option>' +
-              '</select>' +
-            '</div>' +
-            '<div class="zv-card__menu-section">' +
-              '<span class="zv-card__menu-label">Forma</span>' +
-              '<select class="zv-card__shape" aria-label="Forma tarjeta">' +
-                '<option value="rect">Rectángulo</option>' +
-                '<option value="square">Cuadrado</option>' +
-                '<option value="wide">Wide</option>' +
-                '<option value="tall">Tall</option>' +
-              '</select>' +
-            '</div>' +
-            '<div class="zv-card__menu-sep" role="separator"></div>' +
             '<button type="button" class="zv-card__menu-item zv-card__menu-item--danger" data-act="remove" role="menuitem">' +
               '<span class="zv-card__menu-ico">✕</span>Quitar tarjeta' +
             '</button>' +

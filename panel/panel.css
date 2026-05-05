@@ -252,15 +252,33 @@ body[data-page="panel"] #zv-workspace-root {
 
 /* Form más denso */
 .zv-card__body .fx-calculator-form { padding: 8px 0 0 !important; }
+
+/* ── Etiqueta "DATOS" encima de los campos (misma estética que "RESULTADOS") ── */
+.zv-card__body .fx-fields-grid::before,
+.zv-card__body .fx-form-grid::before {
+  content: "Datos";
+  display: block;
+  width: 100%;
+  font-size: 11px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--zv-muted);
+  margin-bottom: 6px;
+  flex-basis: 100%;
+  order: -1;
+}
+
 /* ── Campos: fila única, todos a la misma altura ───────── */
 .zv-card__body .fx-fields-grid,
 .zv-card__body .fx-form-grid {
   display: flex !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;       /* wrap para que ::before ocupe su línea */
   align-items: flex-start !important;
-  gap: 8px !important;
+  gap: 0 8px !important;            /* row-gap 0 col-gap 8px */
   overflow-x: visible !important;
 }
+/* Los campos reales en una sola fila (sin wrap entre ellos) se logra
+   poniendo flex-basis 0: nunca romperán línea entre sí gracias a flex:1 1 0 */
 .zv-card__body .fx-fields-grid .fx-field,
 .zv-card__body .fx-form-grid .fx-field {
   flex: 1 1 0 !important;
@@ -292,6 +310,21 @@ body[data-page="panel"] #zv-workspace-root {
   height: auto !important;
   width: 100% !important;
   box-sizing: border-box !important;
+  /* Mismo recuadro visual que las métricas de resultado */
+  border: 1px solid var(--zv-border) !important;
+  border-radius: 8px !important;
+  background: #fbfaf5 !important;
+  box-shadow: none !important;
+  color: var(--zv-text) !important;
+  outline-offset: 2px !important;
+}
+.zv-card__body .fx-field input:focus,
+.zv-card__body .fx-field select:focus,
+.zv-card__body .fx-field textarea:focus {
+  border-color: var(--zv-accent) !important;
+  background: #fff !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--zv-accent-soft) !important;
 }
 
 /* ── Resultados: fila única, todos a la misma altura ─── */
@@ -906,8 +939,13 @@ body[data-page="panel"] .main > .section > .container {
   .zv-card__body .fx-fields-grid,
   .zv-card__body .fx-form-grid {
     display: flex !important;
-    flex-wrap: nowrap !important;
-    gap: 5px !important;
+    flex-wrap: wrap !important;
+    gap: 0 5px !important;
+  }
+  .zv-card__body .fx-fields-grid::before,
+  .zv-card__body .fx-form-grid::before {
+    font-size: 8px !important;
+    margin-bottom: 3px;
   }
   .zv-card__body .fx-fields-grid .fx-field,
   .zv-card__body .fx-form-grid .fx-field {
