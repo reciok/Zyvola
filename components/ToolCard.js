@@ -64,20 +64,38 @@
           '<p class="zv-card__sub">' + esc(this.section) + (this.group ? ' · ' + esc(this.group) : '') + '</p>' +
         '</div>' +
         '<div class="zv-card__head-actions">' +
-          '<select class="zv-card__size" aria-label="Tamaño tarjeta">' +
-            '<option value="S">S</option>' +
-            '<option value="M">M</option>' +
-            '<option value="L">L</option>' +
-            '<option value="XL">XL</option>' +
-          '</select>' +
-          '<select class="zv-card__shape" aria-label="Forma tarjeta">' +
-            '<option value="rect">Rectángulo</option>' +
-            '<option value="square">Cuadrado</option>' +
-            '<option value="wide">Wide</option>' +
-            '<option value="tall">Tall</option>' +
-          '</select>' +
-          '<button type="button" class="zv-card__btn zv-card__btn--chart" title="Generar gráfico">📊</button>' +
-          '<button type="button" class="zv-card__btn zv-card__btn--remove" title="Quitar tarjeta">✕</button>' +
+          '<button type="button" class="zv-card__btn zv-card__btn--menu" aria-haspopup="true" aria-expanded="false" title="Más opciones">⋯</button>' +
+          '<div class="zv-card__menu" role="menu" hidden>' +
+            '<button type="button" class="zv-card__menu-item" data-act="chart" role="menuitem">' +
+              '<span class="zv-card__menu-ico">📊</span>Crear gráfico' +
+            '</button>' +
+            '<button type="button" class="zv-card__menu-item" data-act="advanced" role="menuitem" aria-pressed="false">' +
+              '<span class="zv-card__menu-ico">⚙</span>Opciones avanzadas' +
+            '</button>' +
+            '<div class="zv-card__menu-sep" role="separator"></div>' +
+            '<div class="zv-card__menu-section">' +
+              '<span class="zv-card__menu-label">Tamaño</span>' +
+              '<select class="zv-card__size" aria-label="Tamaño tarjeta">' +
+                '<option value="S">S</option>' +
+                '<option value="M">M</option>' +
+                '<option value="L">L</option>' +
+                '<option value="XL">XL</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="zv-card__menu-section">' +
+              '<span class="zv-card__menu-label">Forma</span>' +
+              '<select class="zv-card__shape" aria-label="Forma tarjeta">' +
+                '<option value="rect">Rectángulo</option>' +
+                '<option value="square">Cuadrado</option>' +
+                '<option value="wide">Wide</option>' +
+                '<option value="tall">Tall</option>' +
+              '</select>' +
+            '</div>' +
+            '<div class="zv-card__menu-sep" role="separator"></div>' +
+            '<button type="button" class="zv-card__menu-item zv-card__menu-item--danger" data-act="remove" role="menuitem">' +
+              '<span class="zv-card__menu-ico">✕</span>Quitar tarjeta' +
+            '</button>' +
+          '</div>' +
         '</div>' +
       '</header>' +
       '<div class="zv-card__body" data-zv-tool-mount="1"></div>' +
@@ -104,19 +122,65 @@
     var self = this;
     var el   = this.el;
 
+    var menuBtn = el.querySelector('.zv-card__btn--menu');
+    var menu    = el.querySelector('.zv-card__menu');
+
+    function closeMenu() {
+      if (!menu) return;
+      menu.hidden = true;
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+      el.classList.remove('is-menu-open');
+      document.removeEventListener('click', onDocClick, true);
+      document.removeEventListener('keydown', onKey, true);
+    }
+    function openMenu() {
+      if (!menu) return;
+      menu.hidden = false;
+      if (menuBtn) menuBtn.setAttribute('aria-expanded', 'true');
+      el.classList.add('is-menu-open');
+      document.addEventListener('click', onDocClick, true);
+      document.addEventListener('keydown', onKey, true);
+    }
+    function onDocClick(ev) {
+      if (!menu || menu.hidden) return;
+      if (ev.target.closest && ev.target.closest('.zv-card__menu')) return;
+      if (ev.target.closest && ev.target.closest('.zv-card__btn--menu') === menuBtn) return;
+      closeMenu();
+    }
+    function onKey(ev) {
+      if (ev.key === 'Escape') closeMenu();
+    }
+
+    if (menuBtn) {
+      menuBtn.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        if (menu && menu.hidden) openMenu(); else closeMenu();
+      });
+    }
+
     el.addEventListener("click", function (ev) {
-      if (ev.target.closest('.zv-card__btn--remove')) {
+      var act = ev.target.closest('[data-act]');
+      if (act && el.contains(act)) {
         ev.stopPropagation();
-        self._fire("onRemove");
-        return;
-      }
-      if (ev.target.closest('.zv-card__btn--chart')) {
-        ev.stopPropagation();
-        self._fire("onRequestChart");
-        return;
+        var name = act.getAttribute('data-act');
+        if (name === 'remove') {
+          closeMenu();
+          self._fire("onRemove");
+          return;
+        }
+        if (name === 'chart') {
+          closeMenu();
+          self._fire("onRequestChart");
+          return;
+        }
+        if (name === 'advanced') {
+          var isOpen = el.classList.toggle('is-advanced-open');
+          act.setAttribute('aria-pressed', isOpen ? 'true' : 'false');
+          return;
+        }
       }
       // selección
-      if (!ev.target.closest('select, input, button')) {
+      if (!ev.target.closest('select, input, button, .zv-card__menu')) {
         self._fire("onSelect");
       }
     });

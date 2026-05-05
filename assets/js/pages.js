@@ -192,328 +192,69 @@ window.ZYVOLA_DATA = {
   },
   financeMenuSections: [
     {
-      key: "finanzas",
-      label: "Finanzas",
+      key: "finanzas-inversion",
+      label: "Finanzas e inversión",
       tools: [
-        "Resumen financiero",
-        "Estado financiero personal",
-        "Flujo de caja",
-        "Balance general",
-        "Patrimonio neto",
-        "Indicadores financieros"
+        "Calculadora de interés compuesto",
+        "Calculadora de inflación",
+        "Calculadora de ROI",
+        "Calculadora de VAN",
+        "Calculadora de TIR",
+        "Calculadora de riesgo",
+        "Calculadora DCA",
+        "Proyección de dividendos",
+        "Calculadora de rentabilidad ajustada al riesgo",
+        "Calculadora de plusvalías y minusvalías",
+        "WACC (Coste Medio Ponderado de Capital)",
+        "CAPM (Rentabilidad esperada)",
+        "Beta de cartera",
+        "CAGR real (ajustado por inflación)",
+        "Payback descontado",
+        "Margen de seguridad (value investing)",
+        "Rebalanceo óptimo según pesos objetivo",
+        "Análisis de sensibilidad (VAN/TIR variando inputs)"
       ]
     },
     {
-      key: "calculadoras",
-      label: "Calculadoras",
+      key: "negocios-empresas",
+      label: "Negocios y empresas",
       tools: [
-        {
-          label: "Finanzas e inversión",
-          items: [
-            "Calculadora de interés compuesto",
-            "Calculadora de inflación",
-            "Calculadora de ROI",
-            "Calculadora de VAN",
-            "Calculadora de TIR",
-            "Calculadora de riesgo",
-            "Calculadora DCA",
-            "Proyección de dividendos",
-            "Calculadora de rentabilidad ajustada al riesgo",
-            "Calculadora de plusvalías y minusvalías",
-            "WACC (Coste Medio Ponderado de Capital)",
-            "CAPM (Rentabilidad esperada)",
-            "Beta de cartera",
-            "CAGR real (ajustado por inflación)",
-            "Payback descontado",
-            "Margen de seguridad (value investing)",
-            "Rebalanceo óptimo según pesos objetivo",
-            "Análisis de sensibilidad (VAN/TIR variando inputs)"
-          ]
-        },
-        {
-          label: "Negocios y empresas",
-          items: [
-            "Punto de equilibrio (Break-even)",
-            "Unit Economics (margen unitario, contribución, etc.)",
-            "CAC (Coste de adquisición de cliente)",
-            "LTV (Lifetime Value)",
-            "Ratio LTV/CAC",
-            "Churn rate",
-            "Retention rate",
-            "Márgenes: bruto, operativo y neto",
-            "DCF simplificado (valor presente de flujos)",
-            "Elasticidad precio / análisis de pricing"
-          ]
-        },
-        {
-          label: "Inmobiliario",
-          items: [
-            "Calculadora de préstamos",
-            "Calculadora de hipoteca",
-            "Calculadora de amortización",
-            "Rentabilidad bruta",
-            "Rentabilidad neta",
-            "Cap rate",
-            "Cash-on-cash return",
-            "Flujo de caja mensual",
-            "ROI inmobiliario con impuestos",
-            "IRR inmobiliaria (iterativa pero aceptada como calculadora)",
-            "Compra vs alquiler (versión simple basada en coste anual)"
-          ]
-        },
-        {
-          label: "Finanzas personales",
-          items: [
-            "Calculadora de jubilación",
-            "Impacto de impuestos en inversiones",
-            "CAGR del patrimonio"
-          ]
-        }
+        "Punto de equilibrio (Break-even)",
+        "Unit Economics (margen unitario, contribución, etc.)",
+        "CAC (Coste de adquisición de cliente)",
+        "LTV (Lifetime Value)",
+        "Ratio LTV/CAC",
+        "Churn rate",
+        "Retention rate",
+        "Márgenes: bruto, operativo y neto",
+        "DCF simplificado (valor presente de flujos)",
+        "Elasticidad precio / análisis de pricing"
       ]
     },
     {
-      key: "simuladores",
-      label: "Simuladores",
+      key: "inmobiliario",
+      label: "Inmobiliario",
       tools: [
-        {
-          label: "Finanzas e inversión",
-          items: [
-            "Inversión",
-            "Aportaciones variables",
-            "Objetivos financieros",
-            "Monte Carlo",
-            "Rebalanceo",
-            "Escenarios económicos",
-            "Inflación futura",
-            "Patrimonio a largo plazo",
-            "Sensibilidad",
-            "Drawdowns",
-            "Riesgo de ruina"
-          ]
-        },
-        {
-          label: "Finanzas personales",
-          items: [
-            "Ahorro",
-            "Deuda",
-            "Gastos futuros",
-            "FIRE",
-            "Independencia financiera",
-            "Jubilación avanzada",
-            "Coste de vida futuro",
-            "Impacto fiscal",
-            "Decisiones financieras"
-          ]
-        },
-        {
-          label: "Inmobiliario",
-          items: [
-            "Hipoteca",
-            "Compra vs alquiler",
-            "Inversión inmobiliaria",
-            "Cashflow inmobiliario",
-            "Revalorización",
-            "Gastos de compra/venta",
-            "Cap rate",
-            "Cash-on-cash",
-            "IRR inmobiliaria",
-            "Hipoteca con amortización dinámica",
-            "Turístico vs tradicional"
-          ]
-        },
-        {
-          label: "Negocios y empresas",
-          items: [
-            "Cashflow",
-            "Punto de equilibrio",
-            "Crecimiento empresarial",
-            "Pricing",
-            "Margen y rentabilidad",
-            "Escenarios de ventas",
-            "Costes",
-            "Financiación",
-            "Impacto fiscal"
-          ]
-        }
+        "Calculadora de préstamos",
+        "Calculadora de hipoteca",
+        "Calculadora de amortización",
+        "Rentabilidad bruta",
+        "Rentabilidad neta",
+        "Cap rate",
+        "Cash-on-cash return",
+        "Flujo de caja mensual",
+        "ROI inmobiliario con impuestos",
+        "IRR inmobiliaria (iterativa pero aceptada como calculadora)",
+        "Compra vs alquiler (versión simple basada en coste anual)"
       ]
     },
     {
-      key: "optimizador",
-      label: "Optimizador",
+      key: "finanzas-personales",
+      label: "Finanzas personales",
       tools: [
-        "Optimizador de gastos",
-        "Optimizador de ingresos",
-        "Optimizador de deuda",
-        "Optimizador de ahorro",
-        "Optimizador de inversiones",
-        "Optimizador fiscal",
-        "Optimizador de presupuesto",
-        "Optimizador de cartera"
-      ]
-    },
-    {
-      key: "analizador",
-      label: "Analizador",
-      tools: [
-        "Analizador de ingresos",
-        "Analizador de gastos",
-        "Analizador de deuda",
-        "Analizador de inversiones",
-        "Analizador de riesgo",
-        "Analizador de hábitos financieros",
-        "Analizador de patrimonio",
-        "Analizador de suscripciones"
-      ]
-    },
-    {
-      key: "inversion",
-      label: "Inversión",
-      tools: [
-        "Chat de inversiones",
-        "Acciones",
-        "ETFs",
-        "Fondos indexados",
-        "Criptomonedas",
-        "Bonos",
-        "Materias primas",
-        "Inmobiliario",
-        "Cartera diversificada",
-        "Rebalanceo automático",
-        "Análisis de correlación entre activos"
-      ]
-    },
-    {
-      key: "ahorro",
-      label: "Ahorro",
-      tools: [
-        "Plan de ahorro mensual",
-        "Objetivos de ahorro",
-        "Fondo de emergencia",
-        "Ahorro automático",
-        "Ahorro por categorías",
-        "Ahorro gamificado",
-        "Sobres digitales",
-        "Ahorro automático basado en reglas"
-      ]
-    },
-    {
-      key: "presupuestos",
-      label: "Presupuestos",
-      tools: [
-        "Crear presupuesto",
-        "Presupuesto mensual",
-        "Presupuesto anual",
-        "Presupuesto por categorías",
-        "Presupuesto familiar",
-        "Presupuesto empresarial",
-        "Presupuesto por eventos",
-        "Presupuesto por proyectos"
-      ]
-    },
-    {
-      key: "impuestos",
-      label: "Impuestos",
-      tools: [
-        "Calculadora de IRPF",
-        "Calculadora de IVA",
-        "Deducciones posibles",
-        "Declaración simulada",
-        "Planificación fiscal",
-        "Impuestos sobre inversiones",
-        "Registro fiscal de operaciones",
-        "Informe fiscal anual"
-      ]
-    },
-    {
-      key: "riesgo",
-      label: "Riesgo",
-      tools: [
-        "Perfil de riesgo",
-        "Test de tolerancia",
-        "Análisis de volatilidad",
-        "Simulación de pérdidas",
-        "Matriz de riesgo"
-      ]
-    },
-    {
-      key: "herramientas-rapidas",
-      label: "Herramientas rápidas",
-      tools: [
-        "Calculadora rápida de porcentajes",
-        "División de gastos"
-      ]
-    },
-    {
-      key: "comparadores",
-      label: "Comparadores",
-      tools: [
-        "Comparador de hipotecas",
-        "Comparador de préstamos",
-        "Comparador de tarjetas",
-        "Comparador de inversiones",
-        "Comparador de seguros"
-      ]
-    },
-    {
-      key: "planificadores",
-      label: "Planificadores",
-      tools: [
-        "Planificador financiero anual",
-        "Planificador de metas",
-        "Planificador de jubilación",
-        "Planificador de deuda",
-        "Planificador de compras grandes"
-      ]
-    },
-    {
-      key: "conversores",
-      label: "Conversores",
-      tools: [
-        "Conversor de divisas",
-        "Conversor de inflación histórica",
-        "Conversor de poder adquisitivo",
-        "Conversor de tasas nominal y efectiva"
-      ]
-    },
-    {
-      key: "estadisticas",
-      label: "Estadísticas",
-      tools: [
-        "Estadísticas personales",
-        "Estadísticas de gastos",
-        "Estadísticas de ingresos",
-        "Estadísticas de ahorro",
-        "Estadísticas de inversión",
-        "Tendencias a largo plazo",
-        "Comparativa mensual y año anterior",
-        "Proyección futura basada en hábitos"
-      ]
-    },
-    {
-      key: "informes",
-      label: "Informes",
-      tools: [
-        "Informe mensual",
-        "Informe anual",
-        "Informe de gastos",
-        "Informe de ingresos",
-        "Informe de inversiones",
-        "Informe de patrimonio"
-      ]
-    },
-    {
-      key: "perfil-financiero",
-      label: "Perfil financiero",
-      tools: [
-        "Mi perfil financiero",
-        "Datos personales",
-        "Nivel financiero",
-        "Objetivos",
-        "Hábitos",
-        "Progreso",
-        "Alertas",
-        "Score financiero",
-        "Nivel de libertad financiera FIRE"
+        "Calculadora de jubilación",
+        "Impacto de impuestos en inversiones",
+        "CAGR del patrimonio"
       ]
     }
   ],

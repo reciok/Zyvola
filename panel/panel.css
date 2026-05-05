@@ -122,13 +122,13 @@ body[data-page="panel"] #zv-workspace-root {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .zv-card__sub {
-  font-size: 11px; color: var(--zv-muted);
-  margin: 2px 0 0; text-transform: uppercase; letter-spacing: 0.03em;
+  display: none !important;
 }
-.zv-card__head-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.zv-card__head-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; position: relative; }
 
-/* Selectores de tamaño / forma quedan inactivos */
-.zv-card__head-actions select { display: none !important; }
+/* Selectores de tamaño / forma quedan inactivos en el head pero visibles dentro del menú */
+.zv-card__head-actions > select { display: none !important; }
+.zv-card__menu select { display: block !important; }
 
 .zv-card__btn {
   width: 28px; height: 28px; border-radius: 7px;
@@ -140,6 +140,77 @@ body[data-page="panel"] #zv-workspace-root {
 .zv-card__btn:hover { background: #faf8f1; }
 .zv-card__btn--remove { color: #b34141; }
 .zv-card__btn--chart  { color: var(--zv-accent); }
+.zv-card__btn--menu {
+  font-size: 18px; line-height: 1; font-weight: 700;
+  color: var(--zv-muted);
+}
+.zv-card.is-menu-open .zv-card__btn--menu,
+.zv-card__btn--menu[aria-expanded="true"] {
+  background: var(--zv-accent-soft);
+  color: var(--zv-text);
+  border-color: var(--zv-accent);
+}
+
+/* ── Popover de tres puntos ───────────────────────────── */
+.zv-card__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  background: #fff;
+  border: 1px solid var(--zv-border);
+  border-radius: 10px;
+  box-shadow: var(--zv-shadow-strong);
+  padding: 6px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.zv-card__menu[hidden] { display: none; }
+.zv-card__menu-item {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0; background: transparent;
+  color: var(--zv-text);
+  font-size: 13px;
+  text-align: left;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background .12s ease;
+}
+.zv-card__menu-item:hover { background: #faf8f1; }
+.zv-card__menu-item[aria-pressed="true"] {
+  background: var(--zv-accent-soft);
+  color: var(--zv-text);
+  font-weight: 600;
+}
+.zv-card__menu-item--danger { color: #b34141; }
+.zv-card__menu-item--danger:hover { background: rgba(179, 65, 65, 0.08); }
+.zv-card__menu-ico {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; flex-shrink: 0; font-size: 13px;
+}
+.zv-card__menu-sep {
+  height: 1px; background: var(--zv-border); margin: 4px 2px;
+}
+.zv-card__menu-section {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 6px 10px;
+}
+.zv-card__menu-label {
+  font-size: 11px; color: var(--zv-muted);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.zv-card__menu select {
+  font-size: 12.5px;
+  padding: 4px 6px;
+  border: 1px solid var(--zv-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--zv-text);
+}
 
 /* Cuerpo: muestra la herramienta entera, sin recortes */
 .zv-card__body {
@@ -160,28 +231,56 @@ body[data-page="panel"] #zv-workspace-root {
   border: 0 !important;
   background: transparent !important;
   box-shadow: none !important;
+  min-height: 0 !important;
+  gap: 0 !important;
 }
+/* Eliminar gap del formulario y ocultar output/results vacíos */
+.zv-card__body .fx-calculator-form { gap: 0 !important; }
+.zv-card__body [data-calculator-output]:empty { display: none !important; }
+.zv-card__body .fx-results-section:not(:has(.fx-metric)):not(:has([class])) { display: none !important; }
+.zv-card__body .fx-results-section { gap: 4px !important; margin-top: 6px !important; }
 .zv-card__body .fx-calculator-head { display: none !important; }
+/* Solo ocultar títulos/subtítulos del shell y de la card-article wrapper,
+   nunca los labels de métricas (fx-metric-label) ni los de campo (fx-field-label) */
 .zv-card__body .fx-calculator-shell > h2,
 .zv-card__body .fx-calculator-shell > p,
-.zv-card__body article > h2:first-of-type,
-.zv-card__body article > p:first-of-type { display: none !important; }
+.zv-card__body .fx-calculator-card > h2:first-of-type,
+.zv-card__body .fx-calculator-card > p.card-copy { display: none !important; }
+/* Garantizar que los labels de métricas y campos siempre sean visibles */
+.zv-card__body .fx-metric-label,
+.zv-card__body .fx-field-label { display: block !important; }
 
 /* Form más denso */
 .zv-card__body .fx-calculator-form { padding: 8px 0 0 !important; }
+/* ── Campos: fila única, todos a la misma altura ───────── */
 .zv-card__body .fx-fields-grid,
 .zv-card__body .fx-form-grid {
-  display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-  gap: 8px 10px !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-start !important;
+  gap: 8px !important;
+  overflow-x: visible !important;
 }
-.zv-card__body .fx-field { gap: 2px !important; margin: 0 !important; }
+.zv-card__body .fx-fields-grid .fx-field,
+.zv-card__body .fx-form-grid .fx-field {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+  margin: 0 !important;
+}
+/* Ocultar campo full-width heredado */
+.zv-card__body .fx-field-full { flex: 2 1 0 !important; }
 .zv-card__body .fx-field > span,
 .zv-card__body .fx-field-label {
   font-size: 10px !important;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--zv-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .zv-card__body .fx-field input,
 .zv-card__body .fx-field select,
@@ -191,15 +290,21 @@ body[data-page="panel"] #zv-workspace-root {
   padding: 6px 8px !important;
   font-size: 12.5px !important;
   height: auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-/* Resultados: cards más pequeñas y en rejilla compacta */
-.zv-card__body .fx-results-section,
+/* ── Resultados: fila única, todos a la misma altura ─── */
 .zv-card__body .fx-results,
-.zv-card__body .fx-metrics-grid,
 .zv-card__body .fx-results-grid {
   margin-top: 8px !important;
+}
+.zv-card__body .fx-metrics-grid {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
   gap: 8px !important;
+  margin-top: 8px !important;
 }
 .zv-card__body .fx-results-header { margin: 6px 0 4px !important; }
 .zv-card__body .fx-results-icon { display: none !important; }
@@ -216,12 +321,16 @@ body[data-page="panel"] #zv-workspace-root {
 .zv-card__body .kpi-card,
 .zv-card__body .result-card,
 .zv-card__body .resultado-card {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
   padding: 8px 10px !important;
   border-radius: 8px !important;
   border: 1px solid var(--zv-border) !important;
   background: #fbfaf5 !important;
   box-shadow: none !important;
-  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
 }
 .zv-card__body .fx-metric-label,
 .zv-card__body .kpi-label,
@@ -230,15 +339,21 @@ body[data-page="panel"] #zv-workspace-root {
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--zv-muted);
-  margin-bottom: 2px !important;
+  margin-bottom: 4px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .zv-card__body .fx-metric-value,
 .zv-card__body .kpi-value,
 .zv-card__body .result-card .value {
-  font-size: 18px !important;
+  font-size: 17px !important;
   font-weight: 700 !important;
   line-height: 1.1 !important;
   margin: 0 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .zv-card__body .fx-metric-icon,
 .zv-card__body .result-card .icon { display: none !important; }
@@ -255,6 +370,36 @@ body[data-page="panel"] #zv-workspace-root {
 .zv-card__body [data-calculator-scenarios] { margin-top: 6px !important; }
 .zv-card__body [data-calculator-scenarios]:empty,
 .zv-card__body [data-calculator-compare]:empty { display: none !important; }
+
+/* ── Modo "solo datos y resultados" (por defecto) ─────────
+ * Los bloques considerados avanzados se ocultan en la tarjeta
+ * y solo aparecen al activar "Opciones avanzadas" en el menú
+ * de tres puntos. Mantiene la tarjeta enfocada en datos +
+ * resultado principal. */
+.zv-card .zv-card__body [data-calculator-compare],
+.zv-card .zv-card__body [data-calculator-scenarios],
+.zv-card .zv-card__body .fx-results-table-wrap,
+.zv-card .zv-card__body .fx-explainer,
+.zv-card .zv-card__body .fx-tips,
+.zv-card .zv-card__body .fx-notes,
+.zv-card .zv-card__body details.zv-opt__details,
+.zv-card .zv-card__body .fx-insights-panel {
+  display: none !important;
+}
+.zv-card.is-advanced-open .zv-card__body [data-calculator-compare],
+.zv-card.is-advanced-open .zv-card__body [data-calculator-scenarios],
+.zv-card.is-advanced-open .zv-card__body .fx-results-table-wrap,
+.zv-card.is-advanced-open .zv-card__body .fx-explainer,
+.zv-card.is-advanced-open .zv-card__body .fx-tips,
+.zv-card.is-advanced-open .zv-card__body .fx-notes,
+.zv-card.is-advanced-open .zv-card__body details.zv-opt__details,
+.zv-card.is-advanced-open .zv-card__body .fx-insights-panel {
+  display: block !important;
+}
+.zv-card.is-advanced-open .zv-card__body [data-calculator-scenarios]:empty,
+.zv-card.is-advanced-open .zv-card__body [data-calculator-compare]:empty {
+  display: none !important;
+}
 
 /* ── Optimizador de cartera ─────────────────────────────── */
 .zv-opt__form { padding: 0 !important; }
@@ -293,31 +438,8 @@ body[data-page="panel"] #zv-workspace-root {
 .zv-opt__chk strong { font-weight: 600; }
 
 
-/* Pie con KPIs (opcional, queda como resumen rápido) */
-.zv-card__foot {
-  border-top: 1px solid var(--zv-border);
-  padding: 8px 14px;
-  background: #fbfaf5;
-  border-bottom-left-radius: var(--zv-radius);
-  border-bottom-right-radius: var(--zv-radius);
-}
-.zv-card__kpis {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  font-size: 11px;
-}
-.zv-card__kpi {
-  display: inline-flex; flex-direction: column;
-  background: #fff; border: 1px solid var(--zv-border);
-  border-radius: 8px; padding: 4px 8px; min-width: 80px;
-}
-.zv-card__kpi em {
-  font-style: normal; color: var(--zv-muted);
-  font-size: 10px; text-transform: uppercase; letter-spacing: 0.04em;
-}
-.zv-card__kpi strong {
-  color: var(--zv-text); font-size: 13px; font-weight: 600;
-}
-.zv-card__kpi-empty { color: var(--zv-muted); font-style: italic; }
+/* Pie con KPIs: oculto — los resultados con etiqueta ya están en el cuerpo */
+.zv-card__foot { display: none !important; }
 
 /* Resize handle desactivado: ya no se puede redimensionar */
 .zv-card__resize-handle { display: none !important; }
@@ -635,19 +757,25 @@ body[data-page="panel"] .main > .section > .container {
 }
 
 @media (max-width: 540px) {
-  /* Formularios en columna única en móviles pequeños */
+  /* Formularios: apilar en columna única en móviles pequeños */
   .zv-card__body .fx-fields-grid,
   .zv-card__body .fx-form-grid {
-    grid-template-columns: 1fr !important;
+    flex-wrap: wrap !important;
+  }
+  .zv-card__body .fx-fields-grid .fx-field,
+  .zv-card__body .fx-form-grid .fx-field {
+    flex: 1 1 140px !important;
   }
   /* Optimizador: productos en 1 col */
   .zv-opt__products {
     grid-template-columns: 1fr;
   }
-  /* Tarjetas de resultado en 2 col */
-  .zv-card__body .fx-metrics-grid,
-  .zv-card__body .fx-results-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
+  /* Métricas de resultado: 2 por fila */
+  .zv-card__body .fx-metrics-grid {
+    flex-wrap: wrap !important;
+  }
+  .zv-card__body .fx-metric {
+    flex: 1 1 120px !important;
   }
   /* Modal: hoja inferior */
   .zv-modal-overlay { padding: 0; align-items: flex-end; }

@@ -95,46 +95,61 @@
     });
   };
 
-  /* ── Acciones del panel inyectadas en la barra lateral ─ */
+  /* ── Acciones del panel inyectadas en la barra lateral ─── */
   PanelWorkspace.prototype._injectSidebarActions = function () {
     var self = this;
     var mount = document.getElementById("finance-tools-menu");
     if (!mount) return;
 
-    function build() {
+    var SVG_NEW   = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 2h7l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.4"/><path d="M10 2v3h3M8 7v4M6 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
+    var SVG_CLEAR = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2 4h12M5 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1m2 0l-1 9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1L3 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    var SVG_PDF   = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 2h7l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.4"/><path d="M8 6v5M5.5 9l2.5 2 2.5-2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    function injectIfNeeded() {
       var nav = mount.querySelector(".finance-sections-nav");
-      if (!nav) return;
-      if (nav.querySelector(".finance-panel-actions")) return;
-
-      var box = document.createElement("div");
-      box.className = "finance-panel-actions";
-      box.innerHTML =
-        '<button type="button" class="finance-panel-actions__btn" data-zv-action="export-pdf" title="Exportar a PDF" aria-label="Exportar a PDF">' +
-          '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9l5 5v13a2 2 0 0 1-2 2z"/><path d="M8 13h8M8 17h5"/></svg>' +
-        '</button>' +
-        '<button type="button" class="finance-panel-actions__btn finance-panel-actions__btn--danger" data-zv-action="clear-all" title="Borrar todo" aria-label="Borrar todo">' +
-          '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>' +
-        '</button>';
-
-      nav.insertBefore(box, nav.firstChild);
-
-      box.querySelector('[data-zv-action="export-pdf"]').addEventListener("click", function () {
-        self._exportPdf();
-      });
-      box.querySelector('[data-zv-action="clear-all"]').addEventListener("click", function () {
-        if (!self.cards.length) return;
-        if (!window.confirm("¿Borrar todas las herramientas del panel?")) return;
-        self.cards.slice().forEach(function (c) { self._removeCard(c.id); });
-      });
+      if (!nav || nav.querySelector(".finance-panel-actions")) return;
+      var div = document.createElement("div");
+      div.className = "finance-panel-actions";
+      div.innerHTML =
+        '<button class="finance-panel-actions__btn" data-panel-action="new" title="Nueva hoja">' + SVG_NEW + '</button>' +
+        '<button class="finance-panel-actions__btn finance-panel-actions__btn--danger" data-panel-action="clear" title="Borrar todo">' + SVG_CLEAR + '</button>' +
+        '<button class="finance-panel-actions__btn" data-panel-action="export" title="Exportar PDF">' + SVG_PDF + '</button>';
+      nav.appendChild(div);
     }
 
-    build();
-    var obs = new MutationObserver(function () { build(); });
-    obs.observe(mount, { childList: true, subtree: true });
+    new MutationObserver(injectIfNeeded).observe(mount, { childList: true });
+    injectIfNeeded();
+
+    mount.addEventListener("click", function (ev) {
+      var btn = ev.target.closest("[data-panel-action]");
+      if (!btn) return;
+      var action = btn.getAttribute("data-panel-action");
+      if (action === "new")    self._newSheet();
+      else if (action === "clear")  self._clearAll();
+      else if (action === "export") self._exportPdf();
+    });
+  };
+
+  PanelWorkspace.prototype._newSheet = function () {
+    if (this.cards.length && !window.confirm("\u00bfCrear una hoja nueva? Se eliminar\u00e1n todas las tarjetas actuales.")) return;
+    this._clearAllCards();
+  };
+
+  PanelWorkspace.prototype._clearAll = function () {
+    if (!this.cards.length) return;
+    if (!window.confirm("\u00bfBorrar todas las tarjetas del panel?")) return;
+    this._clearAllCards();
+  };
+
+  PanelWorkspace.prototype._clearAllCards = function () {
+    this.cards.slice().forEach(function (c) {
+      if (c.el && c.el.parentNode) c.el.parentNode.removeChild(c.el);
+    });
+    this.cards = [];
+    this._persist();
   };
 
   PanelWorkspace.prototype._exportPdf = function () {
-    // Imprime el área del panel; el usuario elige "Guardar como PDF" en el diálogo del navegador.
     window.print();
   };
 
