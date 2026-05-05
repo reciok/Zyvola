@@ -64,6 +64,9 @@
           '<p class="zv-card__sub">' + esc(this.section) + (this.group ? ' · ' + esc(this.group) : '') + '</p>' +
         '</div>' +
         '<div class="zv-card__head-actions">' +
+          /* Selects ocultos: el JS los necesita para size/shape aunque no se muestren en el menú */
+          '<select class="zv-card__size" aria-hidden="true" style="display:none"><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option></select>' +
+          '<select class="zv-card__shape" aria-hidden="true" style="display:none"><option value="rect">rect</option><option value="square">square</option><option value="wide">wide</option><option value="tall">tall</option></select>' +
           '<button type="button" class="zv-card__btn zv-card__btn--menu" aria-haspopup="true" aria-expanded="false" title="Más opciones">⋯</button>' +
           '<div class="zv-card__menu" role="menu" hidden>' +
             '<button type="button" class="zv-card__menu-item" data-act="chart" role="menuitem">' +

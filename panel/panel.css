@@ -253,19 +253,18 @@ body[data-page="panel"] #zv-workspace-root {
 /* Form más denso */
 .zv-card__body .fx-calculator-form { padding: 8px 0 0 !important; }
 
-/* ── Etiqueta "DATOS" encima de los campos (misma estética que "RESULTADOS") ── */
+/* ── Etiqueta "DATOS" encima de los campos ────────────────── */
 .zv-card__body .fx-fields-grid::before,
 .zv-card__body .fx-form-grid::before {
   content: "Datos";
   display: block;
-  width: 100%;
-  font-size: 11px !important;
+  flex-basis: 100%;
+  order: -1;
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--zv-muted);
-  margin-bottom: 6px;
-  flex-basis: 100%;
-  order: -1;
+  margin-bottom: 4px;
 }
 
 /* ── Campos: fila única, todos a la misma altura ───────── */
