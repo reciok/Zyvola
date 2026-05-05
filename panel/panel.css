@@ -754,6 +754,14 @@ body[data-page="panel"] .main > .section > .container {
   #marble-bg { display: none !important; }
   body { background-attachment: scroll !important; }
   body[data-page="panel"] { background: #f7f3ea !important; }
+
+  /* ── Evitar zoom automático de iOS al enfocar inputs (font-size < 16px) ── */
+  .zv-card__body input,
+  .zv-card__body select,
+  .zv-card__body textarea {
+    font-size: 16px !important;
+    -webkit-text-size-adjust: 100%;
+  }
 }
 
 @media (max-width: 540px) {
@@ -791,8 +799,9 @@ body[data-page="panel"] .main > .section > .container {
   /* Contenedor con padding seguro */
   body[data-page="panel"] .main > .section > .container { padding: 0 10px; }
 
-  /* Más espacio para que el botón hamburguesa no choque con header del sitio */
-  body[data-page="panel"] .main { padding-top: 8px; }
+  /* El header fijo mide ~58px en móvil; respetar el padding-top de styles.css (64px)
+     sin sobreescribirlo para que la primera tarjeta no quede oculta tras el nav */
+  body[data-page="panel"] .main { padding-top: 64px; }
 }
 
 /* ── Impresión / Exportar a PDF ──────────────────────────
@@ -800,12 +809,18 @@ body[data-page="panel"] .main > .section > .container {
    con la marca "Zyvola". Todo lo demás (menús, sidebar,
    header del sitio, footer, botones, etc.) queda oculto. */
 @media print {
-  @page { margin: 14mm; }
+  @page { size: A4 portrait; margin: 12mm 14mm; }
 
   html, body {
     background: #fff !important;
     color: #1f1c14 !important;
+    min-height: 0 !important;
+    height: auto !important;
   }
+
+  /* Eliminar SVG de fondo y cualquier pseudo-elemento de body que genere página extra */
+  #marble-bg,
+  body::before, body::after { display: none !important; }
 
   /* Ocultar todo por defecto */
   body > *,
@@ -833,6 +848,8 @@ body[data-page="panel"] .main > .section > .container {
     display: block !important;
     width: 100% !important;
     max-width: none !important;
+    min-height: 0 !important;
+    height: auto !important;
     margin: 0 !important;
     padding: 0 !important;
     box-shadow: none !important;
@@ -883,5 +900,44 @@ body[data-page="panel"] .main > .section > .container {
   .zv-card__body .fx-results-table-wrap {
     max-height: none !important;
     overflow: visible !important;
+  }
+
+  /* ── Campos en fila única (sin wrap) al imprimir ── */
+  .zv-card__body .fx-fields-grid,
+  .zv-card__body .fx-form-grid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+  }
+  .zv-card__body .fx-fields-grid .fx-field,
+  .zv-card__body .fx-form-grid .fx-field {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+  }
+  .zv-card__body .fx-field-label {
+    font-size: 8px !important;
+  }
+  .zv-card__body .fx-field input,
+  .zv-card__body .fx-field select {
+    font-size: 11px !important;
+    padding: 4px 6px !important;
+  }
+
+  /* ── Métricas de resultado en fila única al imprimir ── */
+  .zv-card__body .fx-metrics-grid {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 5px !important;
+  }
+  .zv-card__body .fx-metric {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    padding: 5px 7px !important;
+  }
+  .zv-card__body .fx-metric-label {
+    font-size: 7px !important;
+  }
+  .zv-card__body .fx-metric-value {
+    font-size: 12px !important;
   }
 }
