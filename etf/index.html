@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zyvola · ETFs (demo)</title>
+  <style>
+    :root {
+      --bg:#f6f5f1; --bd:#e7e3d6; --txt:#1f1c14; --mut:#7a7361; --acc:#b8963e;
+    }
+    body { margin:0; padding:20px 24px; font:14px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background:var(--bg); color:var(--txt); }
+    h1 { font-size:22px; margin:0 0 4px; }
+    h2 { font-size:15px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:24px 0 8px; border-top:1px solid var(--acc); padding-top:10px; }
+    .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:12px 0; }
+    button { padding:8px 14px; border-radius:8px; border:1px solid var(--bd); background:#fff; cursor:pointer; font-weight:600; color:var(--txt); }
+    button.primary { background:var(--acc); color:#fff; border-color:transparent; }
+    button:hover { background:#faf8f1; }
+    button.primary:hover { background:#a78536; }
+    table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--bd); border-radius:8px; overflow:hidden; font-size:12.5px; }
+    th, td { padding:6px 8px; border-bottom:1px solid var(--bd); text-align:left; vertical-align:top; }
+    th { background:#fbfaf5; color:var(--mut); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+    tr:last-child td { border-bottom:none; }
+    .pill { display:inline-block; padding:1px 8px; border-radius:999px; font-size:11px; background:#fbfaf5; border:1px solid var(--bd); color:var(--mut); margin-right:4px; }
+    .pos { color:#2a7a3a; font-weight:700; }
+    .neg { color:#b34141; font-weight:700; }
+    pre { background:#fff; border:1px solid var(--bd); border-radius:8px; padding:10px; font-size:12px; max-height:280px; overflow:auto; }
+    .muted { color:var(--mut); }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:8px; }
+    .kpi { background:#fff; border:1px solid var(--bd); border-radius:8px; padding:8px 10px; }
+    .kpi small { display:block; color:var(--mut); font-size:10px; text-transform:uppercase; letter-spacing:.04em; }
+    .kpi b { font-size:18px; }
+  </style>
+</head>
+<body>
+  <h1>Zyvola · módulo ETFs</h1>
+  <div class="muted">Pipeline: importar → analizar → detectar rallies → registrar → patrones → ETFs con futuro.</div>
+
+  <div class="row">
+    <button class="primary" id="btnRun">Ejecutar pipeline</button>
+    <button id="btnUni">Universo</button>
+    <button id="btnRal">Rallies</button>
+    <button id="btnPat">Patrones</button>
+    <button id="btnFut">ETFs con futuro</button>
+    <button id="btnClear">Limpiar BD</button>
+  </div>
+
+  <div id="kpis" class="grid"></div>
+
+  <h2 id="title">Resultados</h2>
+  <div id="out"></div>
+
+  <h2>API</h2>
+  <pre id="api">// Llama a ETF_API.call("/etf/run") o ETF_API.call("/etf/futuro").
+// Endpoints: /etf/universe · /etf/snapshot · /etf/rallies · /etf/patrones · /etf/futuro · /etf/run</pre>
+
+  <script src="etfDataImporter.js"></script>
+  <script src="etfPriceFeed.js"></script>
+  <script src="etfAnalyzer.js"></script>
+  <script src="etfRallyDetector.js"></script>
+  <script src="etfRallyDatabase.js"></script>
+  <script src="etfRallyAnalysis.js"></script>
+  <script src="etfPatternEngine.js"></script>
+  <script src="etfFutureFinder.js"></script>
+  <script src="etfAPI.js"></script>
+  <script>
+    const $out = document.getElementById("out");
+    const $title = document.getElementById("title");
+    const $kpis = document.getElementById("kpis");
+
+    function fmtPct(v){ if(v==null) return "—"; const c=v>=0?"pos":"neg"; return `<span class="${c}">${v>=0?"+":""}${(+v).toFixed(2)}%</span>`; }
+    function bool(v){ return v ? "✓" : "·"; }
+    function tableHTML(rows, cols){
+      if(!rows.length) return '<div class="muted">Sin datos.</div>';
+      const th = cols.map(c => `<th>${c.label}</th>`).join("");
+      const tr = rows.map(r => "<tr>"+cols.map(c => `<td>${c.fmt? c.fmt(r):(r[c.key]??"—")}</td>`).join("")+"</tr>").join("");
+      return `<table><thead><tr>${th}</tr></thead><tbody>${tr}</tbody></table>`;
+    }
+
+    function renderKPIs(run){
+      if(!run) { $kpis.innerHTML = ""; return; }
+      $kpis.innerHTML = [
+        ["ETFs",   run.universeCount],
+        ["Rallies detectados", run.ralliesDetected],
+        ["Rallies en BD", run.ralliesStored],
+        ["Patrones", run.patternsCount],
+        ["ETFs con futuro", run.futureCount],
+        ["Ejecutado", new Date(run.ranAt).toLocaleString()]
+      ].map(([k,v]) => `<div class="kpi"><small>${k}</small><b>${v}</b></div>`).join("");
+    }
+
+    document.getElementById("btnRun").onclick = () => {
+      const run = ETF_API.call("/etf/run").data;
+      renderKPIs(run);
+      $title.textContent = "Resumen del pipeline";
+      $out.innerHTML = tableHTML(run.future.slice(0,12), [
+        { label:"ETF", fmt:r=>`<b>${r.etf.ticker}</b> · ${r.etf.nombre}` },
+        { label:"Sector", key:"etf", fmt:r=>r.etf.sector },
+        { label:"Match", fmt:r=>Math.round(r.score*100)+"%" },
+        { label:"Patrón principal", fmt:r=> r.patronesCoincidentes[0] ? r.patronesCoincidentes[0].nombre : "—" },
+        { label:"Subida media", fmt:r=> r.patronesCoincidentes[0] ? "+"+r.patronesCoincidentes[0].mediaSubida+"%" : "—" },
+        { label:"Explicación", key:"explicacion" }
+      ]);
+    };
+    document.getElementById("btnUni").onclick = () => {
+      const u = ETF_API.call("/etf/universe").data;
+      $title.textContent = `Universo de ETFs (${u.length})`;
+      $out.innerHTML = tableHTML(u, [
+        { label:"Ticker", key:"ticker" },
+        { label:"Nombre", key:"nombre" },
+        { label:"ISIN", key:"ISIN" },
+        { label:"Gestora", key:"gestora" },
+        { label:"Sector", key:"sector" },
+        { label:"Tipo", key:"tipo" },
+        { label:"TER", fmt:r=>r.TER+"%" },
+        { label:"Moneda", key:"moneda" }
+      ]);
+    };
+    document.getElementById("btnRal").onclick = () => {
+      const r = ETF_API.call("/etf/rallies");
+      $title.textContent = `Rallies detectados (${r.data.length})`;
+      $out.innerHTML = tableHTML(r.data, [
+        { label:"ETF", fmt:x=>`<b>${x.etf.ticker}</b> · ${x.etf.nombre}` },
+        { label:"Sector", fmt:x=>x.etf.sector },
+        { label:"Inicio", key:"fechaInicio" },
+        { label:"Fin", key:"fechaFin" },
+        { label:"Días", key:"duracionDias" },
+        { label:"%", fmt:x=>fmtPct(x.porcentajeSubida) },
+        { label:"VolRel", fmt:x=>x.volumenRelativo??"—" },
+        { label:"Técnico", fmt:x=> {
+          const t=x.contextoTecnico||{};
+          return `<span class="pill">RSI ${t.rsiPrevio??"—"}</span>`+
+                 `<span class="pill">Ruptura ${bool(t.rupturaResistencia)}</span>`+
+                 `<span class="pill">EMAs ${bool(t.alineacionEMA)}</span>`;
+        }},
+        { label:"Conclusión", key:"conclusionAutomatica" }
+      ]);
+    };
+    document.getElementById("btnPat").onclick = () => {
+      const p = ETF_API.call("/etf/patrones").data;
+      $title.textContent = `Patrones detectados (${p.length})`;
+      $out.innerHTML = tableHTML(p, [
+        { label:"Patrón", key:"nombre" },
+        { label:"Rasgos", fmt:x=>x.rasgos.map(r=>`<span class="pill">${r}</span>`).join("") },
+        { label:"Ocurr.", key:"ocurrencias" },
+        { label:"Subida media", fmt:x=>"+"+x.mediaSubida+"%" },
+        { label:"Duración media", fmt:x=>x.mediaDuracion+" d" },
+        { label:"Score", key:"score" }
+      ]);
+    };
+    document.getElementById("btnFut").onclick = () => {
+      const f = ETF_API.call("/etf/futuro").data;
+      $title.textContent = `ETFs con futuro (${f.length})`;
+      $out.innerHTML = tableHTML(f, [
+        { label:"ETF", fmt:x=>`<b>${x.etf.ticker}</b> · ${x.etf.nombre}` },
+        { label:"Sector", fmt:x=>x.etf.sector },
+        { label:"Match", fmt:x=>Math.round(x.score*100)+"%" },
+        { label:"Rasgos", fmt:x=>x.rasgosActuales.map(r=>`<span class="pill">${r}</span>`).join("") },
+        { label:"Patrones", fmt:x=>x.patronesCoincidentes.map(p=>`${p.nombre} (${Math.round(p.match*100)}%)`).join("<br>") },
+        { label:"Explicación", key:"explicacion" }
+      ]);
+    };
+    document.getElementById("btnClear").onclick = () => {
+      ZyvolaETF.rallyDB.clear();
+      ZyvolaETF.dataImporter.clearCache();
+      renderKPIs(null);
+      $title.textContent = "Base de datos vaciada";
+      $out.innerHTML = '<div class="muted">Pulsa "Ejecutar pipeline" para regenerar.</div>';
+    };
+
+    // Auto-ejecuta una vez al cargar
+    document.getElementById("btnRun").click();
+  </script>
+</body>
+</html>
