@@ -8,6 +8,7 @@ window.ZYVOLA_DATA = {
   nav: [
     { key: "home", label: "Inicio", href: "index.html" },
     { key: "panel", label: "Panel", href: "finance/panel/index.html" },
+    { key: "inversiones", label: "Inversiones", href: "etf/index.html" },
     { key: "documentos", label: "Documentos", href: "documents/index.html" },
     { key: "connect", label: "Connect", href: "connect/index.html" }
   ],
