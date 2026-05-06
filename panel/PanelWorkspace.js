@@ -268,22 +268,35 @@
 
     var MOUSE_DRAG_THRESHOLD = 8;
     var TOUCH_DRAG_THRESHOLD = 10;
-    var TOUCH_HOLD_DELAY = 220;
-    var AUTO_SCROLL_EDGE = 80;
-    var AUTO_SCROLL_MAX_STEP = 18;
+    var TOUCH_HOLD_DELAY     = 220;
+    var AUTO_SCROLL_EDGE     = 80;  // px desde el borde del panel que activa el scroll
+
+    /* Velocidad de scroll en 3 zonas según distancia al límite de activación:
+       0-20 px pasado el límite → lento   (4 px/frame)
+       20-60 px → medio                   (10 px/frame)
+       60+ px  → rápido                   (18 px/frame)   */
+    function scrollStep(distPastBoundary) {
+      if (distPastBoundary <= 20) return 4;
+      if (distPastBoundary <= 60) return 10;
+      return 18;
+    }
 
     function startDrag(startY) {
-      var el = card.el;
-      var rect = el.getBoundingClientRect();
+      var el     = card.el;
+      var rect   = el.getBoundingClientRect();
+      var listEl = self.list;
 
-      // ── position:fixed: coordenadas de viewport, independiente de scroll ──
-      // pointerOffsetY = distancia desde el top de la tarjeta hasta donde tocó
-      // el dedo → la tarjeta sigue al dedo sin salto y sin deriva.
-      var fixedLeft      = rect.left;
-      var fixedWidth     = rect.width;
-      var pointerOffsetY = startY - rect.top;   // offset del dedo dentro de la tarjeta
+      var fixedLeft       = rect.left;
+      var fixedWidth      = rect.width;
+      var pointerOffsetY  = startY - rect.top;
       var currentPointerY = startY;
-      var rafId = null;
+      var rafId           = null;
+
+      // Posición original para restaurar si se suelta en área vacía
+      var originalNextSibling = el.nextSibling;
+
+      // Elemento de referencia anterior al placeholder (para detectar cambios)
+      var lastInsertBefore = undefined;  // sentinel: no inicializado
 
       var placeholder = document.createElement("div");
       placeholder.className = "zv-card__placeholder-slot";
@@ -292,7 +305,7 @@
 
       el.classList.add("is-dragging");
       el.style.position      = "fixed";
-      el.style.left          = fixedLeft + "px";   // nunca cambia → sin deriva horizontal
+      el.style.left          = fixedLeft + "px";
       el.style.width         = fixedWidth + "px";
       el.style.top           = (startY - pointerOffsetY) + "px";
       el.style.zIndex        = "1000";
@@ -308,50 +321,77 @@
       }
 
       function updatePosition() {
-        // Con fixed: top = posición del dedo - offset inicial dentro de la tarjeta.
-        // No hace falta compensar scroll: fixed ya es relativo al viewport.
         el.style.top = (currentPointerY - pointerOffsetY) + "px";
       }
 
+      /* Calcula el paso de scroll (positivo=abajo, negativo=arriba, 0=nada)
+         usando los límites REALES del panel, no del viewport. */
       function computeStep(clientY) {
-        var vh = window.innerHeight || document.documentElement.clientHeight || 0;
-        if (clientY < AUTO_SCROLL_EDGE) {
-          return -Math.max(6, Math.round(((AUTO_SCROLL_EDGE - clientY) / AUTO_SCROLL_EDGE) * AUTO_SCROLL_MAX_STEP));
+        var lr         = listEl.getBoundingClientRect();
+        var topBound   = lr.top    + AUTO_SCROLL_EDGE;
+        var bottomBound = lr.bottom - AUTO_SCROLL_EDGE;
+
+        if (clientY < topBound) {
+          return -scrollStep(topBound - clientY);
         }
-        if (clientY > vh - AUTO_SCROLL_EDGE) {
-          return Math.max(6, Math.round(((clientY - (vh - AUTO_SCROLL_EDGE)) / AUTO_SCROLL_EDGE) * AUTO_SCROLL_MAX_STEP));
+        if (clientY > bottomBound) {
+          return scrollStep(clientY - bottomBound);
         }
         return 0;
       }
 
+      /* Reposiciona el placeholder con animación FLIP ligera en las tarjetas
+         vecinas (transform + transition) solo cuando la posición cambia. */
       function placePlaceholder() {
-        var scrollY = getScrollY();
-        var sibs = siblings();
+        var scrollY     = getScrollY();
+        var sibs        = siblings();
         var pointerDocY = currentPointerY + scrollY;
-        var inserted = false;
+
+        // Determinar el nodo antes del cual insertar el placeholder
+        var insertBefore = null;  // null = insertar tras el último
         for (var i = 0; i < sibs.length; i++) {
           var r = sibs[i].getBoundingClientRect();
           if (pointerDocY < r.top + scrollY + r.height / 2) {
-            sibs[i].parentNode.insertBefore(placeholder, sibs[i]);
-            inserted = true;
+            insertBefore = sibs[i];
             break;
           }
         }
-        if (!inserted && sibs.length) {
+
+        // Solo animar si la posición del placeholder cambia realmente
+        if (insertBefore === lastInsertBefore) return;
+        lastInsertBefore = insertBefore;
+
+        // FLIP – capturar posiciones antes del cambio DOM
+        var beforeTops = new Map();
+        sibs.forEach(function (s) { beforeTops.set(s, s.getBoundingClientRect().top); });
+
+        // Mover placeholder en el DOM
+        if (insertBefore) {
+          insertBefore.parentNode.insertBefore(placeholder, insertBefore);
+        } else if (sibs.length) {
           var last = sibs[sibs.length - 1];
           last.parentNode.insertBefore(placeholder, last.nextSibling);
         }
+
+        // FLIP – animar tarjetas que se desplazaron
+        sibs.forEach(function (s) {
+          var delta = beforeTops.get(s) - s.getBoundingClientRect().top;
+          if (Math.abs(delta) < 1) return;
+          s.style.transition = "none";
+          s.style.transform  = "translateY(" + delta + "px)";
+          // Forzar reflow para que el navegador registre el estado inicial
+          s.getBoundingClientRect();  // eslint-disable-line no-unused-expressions
+          s.style.transition = "transform 0.15s ease";
+          s.style.transform  = "";
+        });
       }
 
-      // RAF loop SIEMPRE activo durante el drag.
-      // Hace auto-scroll si el puntero está en la zona de borde,
-      // aunque el dedo esté quieto (no llegan touchmove events).
+      /* RAF loop SIEMPRE activo durante el drag.
+         Hace auto-scroll continuo si el puntero está en zona de borde. */
       function rafLoop() {
         var step = computeStep(currentPointerY);
         if (step) {
           window.scrollBy(0, step);
-          // Con fixed, el card permanece en viewport-coords → no hay que
-          // recalcular top. Solo reposicionar el placeholder.
           placePlaceholder();
         }
         rafId = requestAnimationFrame(rafLoop);
@@ -365,18 +405,39 @@
       }
 
       function endDrag() {
-        window.removeEventListener("mousemove", onMouseMove);
-        window.removeEventListener("mouseup", onMouseUp);
-        window.removeEventListener("touchmove", onTouchMove);
-        window.removeEventListener("touchend", onTouchEnd);
+        window.removeEventListener("mousemove",   onMouseMove);
+        window.removeEventListener("mouseup",     onMouseUp);
+        window.removeEventListener("touchmove",   onTouchMove);
+        window.removeEventListener("touchend",    onTouchEnd);
         window.removeEventListener("touchcancel", onTouchEnd);
         cancelAnimationFrame(rafId);
         rafId = null;
 
+        // Limpiar transforms FLIP pendientes en los hermanos
+        siblings().forEach(function (s) {
+          s.style.transition = "";
+          s.style.transform  = "";
+        });
+
         if (placeholder.parentNode) {
-          placeholder.parentNode.insertBefore(el, placeholder);
+          var lr     = listEl.getBoundingClientRect();
+          var inList = currentPointerY >= lr.top && currentPointerY <= lr.bottom;
+
+          if (inList) {
+            // Soltar sobre el panel → colocar donde está el placeholder
+            placeholder.parentNode.insertBefore(el, placeholder);
+          } else {
+            // Soltar fuera del panel → restaurar posición original
+            var parent = placeholder.parentNode;
+            if (originalNextSibling && originalNextSibling.parentNode === parent) {
+              parent.insertBefore(el, originalNextSibling);
+            } else {
+              parent.appendChild(el);
+            }
+          }
           placeholder.parentNode.removeChild(placeholder);
         }
+
         el.classList.remove("is-dragging");
         el.style.position      = "";
         el.style.left          = "";
@@ -395,22 +456,25 @@
       function onTouchMove(e) { e.preventDefault(); moveToY(e.touches[0].clientY); }
       function onTouchEnd()   { endDrag(); }
 
-      window.addEventListener("mousemove", onMouseMove);
-      window.addEventListener("mouseup", onMouseUp);
-      window.addEventListener("touchmove", onTouchMove, { passive: false });
-      window.addEventListener("touchend", onTouchEnd);
+      window.addEventListener("mousemove",   onMouseMove);
+      window.addEventListener("mouseup",     onMouseUp);
+      window.addEventListener("touchmove",   onTouchMove, { passive: false });
+      window.addEventListener("touchend",    onTouchEnd);
       window.addEventListener("touchcancel", onTouchEnd);
     }
 
-    handle.addEventListener("mousedown", function (ev) {
-      if (ev.target.closest("select, input, button, [contenteditable='true']")) return;
+    /* Excluir áreas con texto (.zv-card__title-wrap) y controles interactivos */
+    var TEXT_SELECTOR = "select, input, button, [contenteditable='true'], .zv-card__title-wrap";
 
-      var startY = ev.clientY;
+    handle.addEventListener("mousedown", function (ev) {
+      if (ev.target.closest(TEXT_SELECTOR)) return;
+
+      var startY      = ev.clientY;
       var dragStarted = false;
 
       function cleanup() {
         window.removeEventListener("mousemove", onMouseMoveArmed);
-        window.removeEventListener("mouseup", onMouseUpArmed);
+        window.removeEventListener("mouseup",   onMouseUpArmed);
       }
 
       function onMouseMoveArmed(moveEv) {
@@ -419,34 +483,33 @@
         dragStarted = true;
         cleanup();
         ev.preventDefault();
-        startDrag(moveEv.clientY);  // referencia = posición ACTUAL, dy arranca en 0
+        startDrag(moveEv.clientY);
       }
 
-      function onMouseUpArmed() {
-        cleanup();
-      }
+      function onMouseUpArmed() { cleanup(); }
 
       window.addEventListener("mousemove", onMouseMoveArmed);
-      window.addEventListener("mouseup", onMouseUpArmed);
+      window.addEventListener("mouseup",   onMouseUpArmed);
     });
 
     handle.addEventListener("touchstart", function (ev) {
-      if (ev.target.closest("select, input, button, [contenteditable='true']")) return;
+      if (ev.target.closest(TEXT_SELECTOR)) return;
 
-      var touch = ev.touches[0];
-      var startY = touch.clientY;
-      var startX = touch.clientX;
-      var latestTouchY = startY;  // se actualiza en cada touchmove del período de espera
-      var dragStarted = false;
+      var touch        = ev.touches[0];
+      var startY       = touch.clientY;
+      var startX       = touch.clientX;
+      var latestTouchY = startY;
+      var dragStarted  = false;
+
       var timer = setTimeout(function () {
         dragStarted = true;
-        startDrag(latestTouchY);  // referencia = posición ACTUAL del dedo, dy arranca en 0
+        startDrag(latestTouchY);
       }, TOUCH_HOLD_DELAY);
 
       function cleanup() {
         clearTimeout(timer);
-        window.removeEventListener("touchmove", onTouchMoveArmed);
-        window.removeEventListener("touchend", onTouchEndArmed);
+        window.removeEventListener("touchmove",   onTouchMoveArmed);
+        window.removeEventListener("touchend",    onTouchEndArmed);
         window.removeEventListener("touchcancel", onTouchEndArmed);
       }
 
@@ -454,20 +517,16 @@
         if (dragStarted) return;
         var current = moveEv.touches && moveEv.touches[0];
         if (!current) return;
-        latestTouchY = current.clientY;  // seguir la posición del dedo
+        latestTouchY = current.clientY;
         var dy = Math.abs(current.clientY - startY);
         var dx = Math.abs(current.clientX - startX);
-        if (dy > TOUCH_DRAG_THRESHOLD || dx > TOUCH_DRAG_THRESHOLD) {
-          cleanup();
-        }
+        if (dy > TOUCH_DRAG_THRESHOLD || dx > TOUCH_DRAG_THRESHOLD) { cleanup(); }
       }
 
-      function onTouchEndArmed() {
-        cleanup();
-      }
+      function onTouchEndArmed() { cleanup(); }
 
-      window.addEventListener("touchmove", onTouchMoveArmed, { passive: true });
-      window.addEventListener("touchend", onTouchEndArmed);
+      window.addEventListener("touchmove",   onTouchMoveArmed, { passive: true });
+      window.addEventListener("touchend",    onTouchEndArmed);
       window.addEventListener("touchcancel", onTouchEndArmed);
     }, { passive: true });
   };
