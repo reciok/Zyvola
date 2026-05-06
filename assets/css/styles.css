@@ -1447,6 +1447,34 @@ h3 {
 
   .nav-list.open {
     display: flex;
+    flex-direction: column;
+    gap: 0;
+    /* Dropdown flotante anclado al borde derecho del header */
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 190px;
+    background: #fbfaf5;
+    border: 1px solid rgba(184, 150, 62, 0.25);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.13);
+    z-index: 300;
+    padding: 6px 0 10px;
+  }
+
+  .nav-list.open .nav-link {
+    display: block;
+    padding: 11px 20px;
+    font-size: 0.85rem;
+    text-align: left;
+    border-radius: 0;
+    width: 100%;
+  }
+
+  /* Para que el dropdown quede posicionado respecto al header */
+  .site-header {
+    position: relative;
   }
 
   .filters,

@@ -107,14 +107,28 @@
 
     function injectIfNeeded() {
       var nav = mount.querySelector(".finance-sections-nav");
-      if (!nav || nav.querySelector(".finance-panel-actions")) return;
-      var div = document.createElement("div");
-      div.className = "finance-panel-actions";
-      div.innerHTML =
-        '<button class="finance-panel-actions__btn" data-panel-action="new" title="Nueva hoja">' + SVG_NEW + '</button>' +
-        '<button class="finance-panel-actions__btn finance-panel-actions__btn--danger" data-panel-action="clear" title="Borrar todo">' + SVG_CLEAR + '</button>' +
-        '<button class="finance-panel-actions__btn" data-panel-action="export" title="Exportar PDF">' + SVG_PDF + '</button>';
-      nav.insertBefore(div, nav.firstChild);
+      if (!nav) return;
+
+      if (!nav.querySelector(".finance-panel-actions")) {
+        var div = document.createElement("div");
+        div.className = "finance-panel-actions";
+        div.innerHTML =
+          '<button class="finance-panel-actions__btn" data-panel-action="new" title="Nueva hoja">' + SVG_NEW + '</button>' +
+          '<button class="finance-panel-actions__btn finance-panel-actions__btn--danger" data-panel-action="clear" title="Borrar todo">' + SVG_CLEAR + '</button>' +
+          '<button class="finance-panel-actions__btn" data-panel-action="export" title="Exportar PDF">' + SVG_PDF + '</button>';
+        nav.insertBefore(div, nav.firstChild);
+      }
+
+      if (!nav.querySelector(".zv-panel-sitenav")) {
+        var navBar = document.createElement("nav");
+        navBar.className = "zv-panel-sitenav";
+        navBar.innerHTML =
+          '<a class="zv-panel-sitenav__link" href="../../index.html">Inicio</a>' +
+          '<a class="zv-panel-sitenav__link" href="../../etf/index.html">Inversiones</a>' +
+          '<a class="zv-panel-sitenav__link" href="../../documents/index.html">Documentos</a>';
+        var actions = nav.querySelector(".finance-panel-actions");
+        nav.insertBefore(navBar, actions ? actions.nextSibling : nav.firstChild);
+      }
     }
 
     new MutationObserver(injectIfNeeded).observe(mount, { childList: true });
@@ -436,7 +450,7 @@
         dragStarted = true;
         cleanup();
         ev.preventDefault();
-        startDrag(startY);
+        startDrag(moveEv.clientY);  // referencia = posición ACTUAL, dy arranca en 0
       }
 
       function onMouseUpArmed() {
@@ -453,10 +467,11 @@
       var touch = ev.touches[0];
       var startY = touch.clientY;
       var startX = touch.clientX;
+      var latestTouchY = startY;  // se actualiza en cada touchmove del período de espera
       var dragStarted = false;
       var timer = setTimeout(function () {
         dragStarted = true;
-        startDrag(startY);
+        startDrag(latestTouchY);  // referencia = posición ACTUAL del dedo, dy arranca en 0
       }, TOUCH_HOLD_DELAY);
 
       function cleanup() {
@@ -470,6 +485,7 @@
         if (dragStarted) return;
         var current = moveEv.touches && moveEv.touches[0];
         if (!current) return;
+        latestTouchY = current.clientY;  // seguir la posición del dedo
         var dy = Math.abs(current.clientY - startY);
         var dx = Math.abs(current.clientX - startX);
         if (dy > TOUCH_DRAG_THRESHOLD || dx > TOUCH_DRAG_THRESHOLD) {

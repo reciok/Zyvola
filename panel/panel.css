@@ -611,6 +611,34 @@ body[data-page="panel"] .finance-tool-link:hover { color: var(--zv-accent); }
 /* ── Sidebar secundaria (opcional): mantiene estilo original si se usa ─ */
 .finance-tools-nav .finance-panel-actions { display: none; }
 
+/* ── Navegación del sitio dentro del drawer del panel ────── */
+.zv-panel-sitenav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 10px 12px;
+  margin: 0 6px;
+  border-bottom: 1px solid rgba(184, 150, 62, 0.15);
+}
+.zv-panel-sitenav__link {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--zv-text-muted, #6b7280);
+  text-decoration: none;
+  padding: 4px 9px;
+  border-radius: 5px;
+  border: 1px solid var(--zv-border);
+  background: #fff;
+  transition: color .12s, border-color .12s, background .12s;
+}
+.zv-panel-sitenav__link:hover {
+  color: var(--zv-accent);
+  border-color: var(--zv-accent);
+  background: rgba(184, 150, 62, 0.06);
+}
+
 /* ── Modal ───────────────────────────────────────────────── */
 .zv-modal-overlay {
   position: fixed; inset: 0;
