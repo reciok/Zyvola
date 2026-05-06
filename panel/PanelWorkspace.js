@@ -291,9 +291,13 @@
       var initialLeftInList = rect.left - listRect.left;
       var cardWidth         = rect.width;
 
-      var scrollCompensation = 0;   // px acumulados por auto-scroll de página
-      var currentPointerY    = startY;
-      var autoScrollFrame    = 0;
+      function getScrollY() {
+        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      }
+
+      var startScrollY    = getScrollY();   // scroll de página en el momento de inicio
+      var currentPointerY = startY;
+      var autoScrollFrame = 0;
 
       var placeholder = document.createElement("div");
       placeholder.className = "zv-card__placeholder-slot";
@@ -314,15 +318,16 @@
         return self.cards.filter(function (c) { return c !== card; }).map(function (c) { return c.el; });
       }
 
-      function getScrollY() {
-        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
-      }
-
       function updateDraggedPosition() {
-        // top = posición inicial + delta del puntero + compensación de auto-scroll.
-        // left nunca cambia — movimiento estrictamente vertical.
+        // top dentro del contenedor = offset inicial
+        //   + movimiento del dedo (en coordenadas viewport)
+        //   + cuánto ha scrolleado la página (el contenedor se desplazó esa cantidad)
+        // Usar el scroll REAL evita que la tarjeta se mueva sola cuando la
+        // página ya no puede hacer más scroll (scrollBy no hace nada pero antes
+        // seguíamos acumulando scrollCompensation).
+        var scrollDelta = getScrollY() - startScrollY;
         var dy = currentPointerY - startY;
-        el.style.top = (initialTopInList + dy + scrollCompensation) + "px";
+        el.style.top = (initialTopInList + dy + scrollDelta) + "px";
       }
 
       function computeAutoScrollStep(clientY) {
@@ -369,7 +374,6 @@
           }
 
           window.scrollBy(0, step);
-          scrollCompensation += step;  // el contenedor bajó/subió con la página
           updateDraggedPosition();
           placePlaceholder();
           autoScrollFrame = requestAnimationFrame(tick);
