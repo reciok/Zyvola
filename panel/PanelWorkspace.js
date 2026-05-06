@@ -273,129 +273,95 @@
     var AUTO_SCROLL_MAX_STEP = 18;
 
     function startDrag(startY) {
-      var el    = card.el;
-      var listEl = self.list;
+      var el = card.el;
+      var rect = el.getBoundingClientRect();
 
-      // position:absolute dentro del contenedor de lista — la tarjeta no
-      // puede salir del panel, no hay barra de scroll horizontal, y las
-      // coordenadas son simples (ningún CSS transform de padre interfiere).
-      var origListPos = listEl.style.position;
-      listEl.style.position = "relative";
+      // ── position:fixed: coordenadas de viewport, independiente de scroll ──
+      // pointerOffsetY = distancia desde el top de la tarjeta hasta donde tocó
+      // el dedo → la tarjeta sigue al dedo sin salto y sin deriva.
+      var fixedLeft      = rect.left;
+      var fixedWidth     = rect.width;
+      var pointerOffsetY = startY - rect.top;   // offset del dedo dentro de la tarjeta
+      var currentPointerY = startY;
+      var rafId = null;
 
-      // Medir después de aplicar "relative" (fuerza reflow sincrónico)
-      var rect     = el.getBoundingClientRect();
-      var listRect = listEl.getBoundingClientRect();
+      var placeholder = document.createElement("div");
+      placeholder.className = "zv-card__placeholder-slot";
+      placeholder.style.height = rect.height + "px";
+      el.parentNode.insertBefore(placeholder, el.nextSibling);
 
-      // Posición inicial dentro del contenedor (espacio viewport, mismo instante)
-      var initialTopInList  = rect.top  - listRect.top;
-      var initialLeftInList = rect.left - listRect.left;
-      var cardWidth         = rect.width;
+      el.classList.add("is-dragging");
+      el.style.position      = "fixed";
+      el.style.left          = fixedLeft + "px";   // nunca cambia → sin deriva horizontal
+      el.style.width         = fixedWidth + "px";
+      el.style.top           = (startY - pointerOffsetY) + "px";
+      el.style.zIndex        = "1000";
+      el.style.pointerEvents = "none";
+      el.style.transform     = "none";
 
       function getScrollY() {
         return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
       }
 
-      var startScrollY    = getScrollY();   // scroll de página en el momento de inicio
-      var currentPointerY = startY;
-      var autoScrollFrame = 0;
-
-      var placeholder = document.createElement("div");
-      placeholder.className = "zv-card__placeholder-slot";
-      placeholder.style.height = rect.height + "px";
-
-      el.parentNode.insertBefore(placeholder, el.nextSibling);
-      el.classList.add("is-dragging");
-
-      el.style.position      = "absolute";
-      el.style.left          = initialLeftInList + "px";
-      el.style.top           = initialTopInList  + "px";
-      el.style.width         = cardWidth + "px";
-      el.style.zIndex        = "1000";
-      el.style.pointerEvents = "none";
-      el.style.transform     = "none";
-
       function siblings() {
         return self.cards.filter(function (c) { return c !== card; }).map(function (c) { return c.el; });
       }
 
-      function updateDraggedPosition() {
-        // top dentro del contenedor = offset inicial
-        //   + movimiento del dedo (en coordenadas viewport)
-        //   + cuánto ha scrolleado la página (el contenedor se desplazó esa cantidad)
-        // Usar el scroll REAL evita que la tarjeta se mueva sola cuando la
-        // página ya no puede hacer más scroll (scrollBy no hace nada pero antes
-        // seguíamos acumulando scrollCompensation).
-        var scrollDelta = getScrollY() - startScrollY;
-        var dy = currentPointerY - startY;
-        el.style.top = (initialTopInList + dy + scrollDelta) + "px";
+      function updatePosition() {
+        // Con fixed: top = posición del dedo - offset inicial dentro de la tarjeta.
+        // No hace falta compensar scroll: fixed ya es relativo al viewport.
+        el.style.top = (currentPointerY - pointerOffsetY) + "px";
       }
 
-      function computeAutoScrollStep(clientY) {
-        var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+      function computeStep(clientY) {
+        var vh = window.innerHeight || document.documentElement.clientHeight || 0;
         if (clientY < AUTO_SCROLL_EDGE) {
           return -Math.max(6, Math.round(((AUTO_SCROLL_EDGE - clientY) / AUTO_SCROLL_EDGE) * AUTO_SCROLL_MAX_STEP));
         }
-        if (clientY > viewportHeight - AUTO_SCROLL_EDGE) {
-          return Math.max(6, Math.round(((clientY - (viewportHeight - AUTO_SCROLL_EDGE)) / AUTO_SCROLL_EDGE) * AUTO_SCROLL_MAX_STEP));
+        if (clientY > vh - AUTO_SCROLL_EDGE) {
+          return Math.max(6, Math.round(((clientY - (vh - AUTO_SCROLL_EDGE)) / AUTO_SCROLL_EDGE) * AUTO_SCROLL_MAX_STEP));
         }
         return 0;
       }
 
       function placePlaceholder() {
-        var currentScrollY = getScrollY();
+        var scrollY = getScrollY();
         var sibs = siblings();
+        var pointerDocY = currentPointerY + scrollY;
         var inserted = false;
-        var pointerDocY = currentPointerY + currentScrollY;
-
         for (var i = 0; i < sibs.length; i++) {
           var r = sibs[i].getBoundingClientRect();
-          var midpointDocY = r.top + currentScrollY + r.height / 2;
-          if (pointerDocY < midpointDocY) {
+          if (pointerDocY < r.top + scrollY + r.height / 2) {
             sibs[i].parentNode.insertBefore(placeholder, sibs[i]);
             inserted = true;
             break;
           }
         }
-
         if (!inserted && sibs.length) {
           var last = sibs[sibs.length - 1];
           last.parentNode.insertBefore(placeholder, last.nextSibling);
         }
       }
 
-      function syncAutoScroll() {
-        if (autoScrollFrame) return;
-
-        function tick() {
-          var step = computeAutoScrollStep(currentPointerY);
-          if (!step) {
-            autoScrollFrame = 0;
-            return;
-          }
-
+      // RAF loop SIEMPRE activo durante el drag.
+      // Hace auto-scroll si el puntero está en la zona de borde,
+      // aunque el dedo esté quieto (no llegan touchmove events).
+      function rafLoop() {
+        var step = computeStep(currentPointerY);
+        if (step) {
           window.scrollBy(0, step);
-          updateDraggedPosition();
+          // Con fixed, el card permanece en viewport-coords → no hay que
+          // recalcular top. Solo reposicionar el placeholder.
           placePlaceholder();
-          autoScrollFrame = requestAnimationFrame(tick);
         }
-
-        if (computeAutoScrollStep(currentPointerY)) {
-          autoScrollFrame = requestAnimationFrame(tick);
-        }
+        rafId = requestAnimationFrame(rafLoop);
       }
-
-      function stopAutoScroll() {
-        if (!autoScrollFrame) return;
-        cancelAnimationFrame(autoScrollFrame);
-        autoScrollFrame = 0;
-      }
+      rafId = requestAnimationFrame(rafLoop);
 
       function moveToY(clientY) {
         currentPointerY = clientY;
-        updateDraggedPosition();
+        updatePosition();
         placePlaceholder();
-        if (computeAutoScrollStep(currentPointerY)) syncAutoScroll();
-        else stopAutoScroll();
       }
 
       function endDrag() {
@@ -404,22 +370,21 @@
         window.removeEventListener("touchmove", onTouchMove);
         window.removeEventListener("touchend", onTouchEnd);
         window.removeEventListener("touchcancel", onTouchEnd);
-        stopAutoScroll();
+        cancelAnimationFrame(rafId);
+        rafId = null;
 
         if (placeholder.parentNode) {
           placeholder.parentNode.insertBefore(el, placeholder);
           placeholder.parentNode.removeChild(placeholder);
         }
         el.classList.remove("is-dragging");
-        el.style.position = "";
-        el.style.left = "";
-        el.style.top  = "";
-        el.style.width = "";
-        el.style.zIndex = "";
+        el.style.position      = "";
+        el.style.left          = "";
+        el.style.top           = "";
+        el.style.width         = "";
+        el.style.zIndex        = "";
         el.style.pointerEvents = "";
-        el.style.transform = "";
-
-        listEl.style.position = origListPos;  // restaurar el contenedor
+        el.style.transform     = "";
 
         self._syncOrderFromDom();
         self._persist();

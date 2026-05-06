@@ -63,6 +63,7 @@ body[data-page="panel"] #zv-workspace-root {
 }
 .zv-list-root {
   width: 100%;
+  overflow-x: hidden;
 }
 .zv-list {
   display: flex;
