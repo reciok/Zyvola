@@ -81,6 +81,9 @@ body[data-page="panel"] #zv-workspace-root {
   border: 1.5px dashed rgba(184, 150, 62, 0.45);
   border-radius: var(--zv-radius);
   background: rgba(184, 150, 62, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 /* ── Tarjeta ─────────────────────────────────────────────── */
@@ -407,6 +410,63 @@ body[data-page="panel"] #zv-workspace-root {
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
+}
+.zv-card__body .fx-metric,
+.zv-card__body .kpi-card,
+.zv-card__body .result-card,
+.zv-card__body .resultado-card,
+.zv-card__body .fx-metric-value,
+.zv-card__body .kpi-value,
+.zv-card__body .result-card .value {
+  transform: none !important;
+  transition: none !important;
+}
+.zv-card__body .fx-metric:hover,
+.zv-card__body .fx-metric:active,
+.zv-card__body .fx-metric:focus,
+.zv-card__body .fx-metric:focus-within,
+.zv-card__body .kpi-card:hover,
+.zv-card__body .kpi-card:active,
+.zv-card__body .kpi-card:focus,
+.zv-card__body .kpi-card:focus-within,
+.zv-card__body .result-card:hover,
+.zv-card__body .result-card:active,
+.zv-card__body .result-card:focus,
+.zv-card__body .result-card:focus-within,
+.zv-card__body .resultado-card:hover,
+.zv-card__body .resultado-card:active,
+.zv-card__body .resultado-card:focus,
+.zv-card__body .resultado-card:focus-within,
+.zv-card__body .fx-metric-value:hover,
+.zv-card__body .fx-metric-value:active,
+.zv-card__body .fx-metric-value:focus,
+.zv-card__body .fx-metric-value:focus-visible,
+.zv-card__body .kpi-value:hover,
+.zv-card__body .kpi-value:active,
+.zv-card__body .kpi-value:focus,
+.zv-card__body .kpi-value:focus-visible,
+.zv-card__body .result-card .value:hover,
+.zv-card__body .result-card .value:active,
+.zv-card__body .result-card .value:focus,
+.zv-card__body .result-card .value:focus-visible {
+  transform: none !important;
+  scale: none !important;
+  box-shadow: none !important;
+}
+.zv-card__body .fx-metric::before,
+.zv-card__body .fx-metric:hover::before,
+.zv-card__body .fx-metric:active::before,
+.zv-card__body .fx-metric:focus::before,
+.zv-card__body .fx-metric:focus-within::before {
+  content: none !important;
+  display: none !important;
+  opacity: 0 !important;
+  background: none !important;
+}
+.zv-card__body .fx-metric.tone-ok,
+.zv-card__body .fx-metric.tone-warn,
+.zv-card__body .fx-metric.tone-bad {
+  border-left: none !important;
 }
 .zv-card__body .fx-metric-icon,
 .zv-card__body .result-card .icon { display: none !important; }

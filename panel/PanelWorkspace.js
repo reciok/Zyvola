@@ -114,7 +114,7 @@
         '<button class="finance-panel-actions__btn" data-panel-action="new" title="Nueva hoja">' + SVG_NEW + '</button>' +
         '<button class="finance-panel-actions__btn finance-panel-actions__btn--danger" data-panel-action="clear" title="Borrar todo">' + SVG_CLEAR + '</button>' +
         '<button class="finance-panel-actions__btn" data-panel-action="export" title="Exportar PDF">' + SVG_PDF + '</button>';
-      nav.appendChild(div);
+      nav.insertBefore(div, nav.firstChild);
     }
 
     new MutationObserver(injectIfNeeded).observe(mount, { childList: true });
@@ -252,43 +252,132 @@
     var handle = card.el.querySelector('[data-zv-drag-handle="1"]');
     if (!handle) return;
 
+    var MOUSE_DRAG_THRESHOLD = 8;
+    var TOUCH_DRAG_THRESHOLD = 10;
+    var TOUCH_HOLD_DELAY = 220;
+    var AUTO_SCROLL_EDGE = 80;
+    var AUTO_SCROLL_MAX_STEP = 18;
+
     function startDrag(startY) {
-      var el = card.el;
-      var rect = el.getBoundingClientRect();
+      var el    = card.el;
+      var listEl = self.list;
+
+      // position:absolute dentro del contenedor de lista — la tarjeta no
+      // puede salir del panel, no hay barra de scroll horizontal, y las
+      // coordenadas son simples (ningún CSS transform de padre interfiere).
+      var origListPos = listEl.style.position;
+      listEl.style.position = "relative";
+
+      // Medir después de aplicar "relative" (fuerza reflow sincrónico)
+      var rect     = el.getBoundingClientRect();
+      var listRect = listEl.getBoundingClientRect();
+
+      // Posición inicial dentro del contenedor (espacio viewport, mismo instante)
+      var initialTopInList  = rect.top  - listRect.top;
+      var initialLeftInList = rect.left - listRect.left;
+      var cardWidth         = rect.width;
+
+      var scrollCompensation = 0;   // px acumulados por auto-scroll de página
+      var currentPointerY    = startY;
+      var autoScrollFrame    = 0;
+
       var placeholder = document.createElement("div");
       placeholder.className = "zv-card__placeholder-slot";
       placeholder.style.height = rect.height + "px";
 
       el.parentNode.insertBefore(placeholder, el.nextSibling);
       el.classList.add("is-dragging");
-      el.style.position = "fixed";
-      el.style.left  = rect.left + "px";
-      el.style.top   = rect.top  + "px";
-      el.style.width = rect.width + "px";
-      el.style.zIndex = "1000";
+
+      el.style.position      = "absolute";
+      el.style.left          = initialLeftInList + "px";
+      el.style.top           = initialTopInList  + "px";
+      el.style.width         = cardWidth + "px";
+      el.style.zIndex        = "1000";
       el.style.pointerEvents = "none";
+      el.style.transform     = "none";
 
       function siblings() {
         return self.cards.filter(function (c) { return c !== card; }).map(function (c) { return c.el; });
       }
 
-      function moveToY(clientY) {
-        var dy = clientY - startY;
-        el.style.transform = "translateY(" + dy + "px)";
+      function getScrollY() {
+        return window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      }
+
+      function updateDraggedPosition() {
+        // top = posición inicial + delta del puntero + compensación de auto-scroll.
+        // left nunca cambia — movimiento estrictamente vertical.
+        var dy = currentPointerY - startY;
+        el.style.top = (initialTopInList + dy + scrollCompensation) + "px";
+      }
+
+      function computeAutoScrollStep(clientY) {
+        var viewportHeight = window.innerHeight || document.documentElement.clientHeight || 0;
+        if (clientY < AUTO_SCROLL_EDGE) {
+          return -Math.max(6, Math.round(((AUTO_SCROLL_EDGE - clientY) / AUTO_SCROLL_EDGE) * AUTO_SCROLL_MAX_STEP));
+        }
+        if (clientY > viewportHeight - AUTO_SCROLL_EDGE) {
+          return Math.max(6, Math.round(((clientY - (viewportHeight - AUTO_SCROLL_EDGE)) / AUTO_SCROLL_EDGE) * AUTO_SCROLL_MAX_STEP));
+        }
+        return 0;
+      }
+
+      function placePlaceholder() {
+        var currentScrollY = getScrollY();
         var sibs = siblings();
         var inserted = false;
+        var pointerDocY = currentPointerY + currentScrollY;
+
         for (var i = 0; i < sibs.length; i++) {
           var r = sibs[i].getBoundingClientRect();
-          if (clientY < r.top + r.height / 2) {
+          var midpointDocY = r.top + currentScrollY + r.height / 2;
+          if (pointerDocY < midpointDocY) {
             sibs[i].parentNode.insertBefore(placeholder, sibs[i]);
             inserted = true;
             break;
           }
         }
+
         if (!inserted && sibs.length) {
           var last = sibs[sibs.length - 1];
           last.parentNode.insertBefore(placeholder, last.nextSibling);
         }
+      }
+
+      function syncAutoScroll() {
+        if (autoScrollFrame) return;
+
+        function tick() {
+          var step = computeAutoScrollStep(currentPointerY);
+          if (!step) {
+            autoScrollFrame = 0;
+            return;
+          }
+
+          window.scrollBy(0, step);
+          scrollCompensation += step;  // el contenedor bajó/subió con la página
+          updateDraggedPosition();
+          placePlaceholder();
+          autoScrollFrame = requestAnimationFrame(tick);
+        }
+
+        if (computeAutoScrollStep(currentPointerY)) {
+          autoScrollFrame = requestAnimationFrame(tick);
+        }
+      }
+
+      function stopAutoScroll() {
+        if (!autoScrollFrame) return;
+        cancelAnimationFrame(autoScrollFrame);
+        autoScrollFrame = 0;
+      }
+
+      function moveToY(clientY) {
+        currentPointerY = clientY;
+        updateDraggedPosition();
+        placePlaceholder();
+        if (computeAutoScrollStep(currentPointerY)) syncAutoScroll();
+        else stopAutoScroll();
       }
 
       function endDrag() {
@@ -296,6 +385,8 @@
         window.removeEventListener("mouseup", onMouseUp);
         window.removeEventListener("touchmove", onTouchMove);
         window.removeEventListener("touchend", onTouchEnd);
+        window.removeEventListener("touchcancel", onTouchEnd);
+        stopAutoScroll();
 
         if (placeholder.parentNode) {
           placeholder.parentNode.insertBefore(el, placeholder);
@@ -310,6 +401,8 @@
         el.style.pointerEvents = "";
         el.style.transform = "";
 
+        listEl.style.position = origListPos;  // restaurar el contenedor
+
         self._syncOrderFromDom();
         self._persist();
       }
@@ -323,19 +416,75 @@
       window.addEventListener("mouseup", onMouseUp);
       window.addEventListener("touchmove", onTouchMove, { passive: false });
       window.addEventListener("touchend", onTouchEnd);
+      window.addEventListener("touchcancel", onTouchEnd);
     }
 
     handle.addEventListener("mousedown", function (ev) {
       if (ev.target.closest("select, input, button, [contenteditable='true']")) return;
-      ev.preventDefault();
-      startDrag(ev.clientY);
+
+      var startY = ev.clientY;
+      var dragStarted = false;
+
+      function cleanup() {
+        window.removeEventListener("mousemove", onMouseMoveArmed);
+        window.removeEventListener("mouseup", onMouseUpArmed);
+      }
+
+      function onMouseMoveArmed(moveEv) {
+        if (dragStarted) return;
+        if (Math.abs(moveEv.clientY - startY) < MOUSE_DRAG_THRESHOLD) return;
+        dragStarted = true;
+        cleanup();
+        ev.preventDefault();
+        startDrag(startY);
+      }
+
+      function onMouseUpArmed() {
+        cleanup();
+      }
+
+      window.addEventListener("mousemove", onMouseMoveArmed);
+      window.addEventListener("mouseup", onMouseUpArmed);
     });
 
     handle.addEventListener("touchstart", function (ev) {
       if (ev.target.closest("select, input, button, [contenteditable='true']")) return;
-      ev.preventDefault();
-      startDrag(ev.touches[0].clientY);
-    }, { passive: false });
+
+      var touch = ev.touches[0];
+      var startY = touch.clientY;
+      var startX = touch.clientX;
+      var dragStarted = false;
+      var timer = setTimeout(function () {
+        dragStarted = true;
+        startDrag(startY);
+      }, TOUCH_HOLD_DELAY);
+
+      function cleanup() {
+        clearTimeout(timer);
+        window.removeEventListener("touchmove", onTouchMoveArmed);
+        window.removeEventListener("touchend", onTouchEndArmed);
+        window.removeEventListener("touchcancel", onTouchEndArmed);
+      }
+
+      function onTouchMoveArmed(moveEv) {
+        if (dragStarted) return;
+        var current = moveEv.touches && moveEv.touches[0];
+        if (!current) return;
+        var dy = Math.abs(current.clientY - startY);
+        var dx = Math.abs(current.clientX - startX);
+        if (dy > TOUCH_DRAG_THRESHOLD || dx > TOUCH_DRAG_THRESHOLD) {
+          cleanup();
+        }
+      }
+
+      function onTouchEndArmed() {
+        cleanup();
+      }
+
+      window.addEventListener("touchmove", onTouchMoveArmed, { passive: true });
+      window.addEventListener("touchend", onTouchEndArmed);
+      window.addEventListener("touchcancel", onTouchEndArmed);
+    }, { passive: true });
   };
 
   PanelWorkspace.prototype._syncOrderFromDom = function () {

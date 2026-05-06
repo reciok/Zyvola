@@ -12,6 +12,12 @@ window.ZYVOLA_DATA = {
     { key: "documentos", label: "Documentos", href: "documents/index.html" },
     { key: "connect", label: "Connect", href: "connect/index.html" }
   ],
+  homeLinks: [
+    { key: "panel", label: "Panel", href: "finance/panel/index.html" },
+    { key: "inversiones", label: "Inversiones", href: "etf/index.html" },
+    { key: "documentos", label: "Documentos", href: "documents/index.html" },
+    { key: "connect", label: "Connect", href: "connect/index.html" }
+  ],
   categories: {
     finance: {
       key: "finance",
@@ -33,7 +39,9 @@ window.ZYVOLA_DATA = {
         "finance-debt-balance",
         "finance-crypto-delta"
       ],
-      subpages: []
+      subpages: [
+        { title: "Inversiones · ETFs", href: "../etf/index.html", note: "Base histórica de rallies, patrones y ETFs con futuro." }
+      ]
     },
     documentos: {
       key: "documents",
@@ -157,6 +165,7 @@ window.ZYVOLA_DATA = {
     { id: "finance-tax-route", category: "finance", name: "Guía", tag: "Guía", state: "Activo", href: "finance/guia/index.html", description: "Mini guías para entender conceptos sin ruido técnico.", previewTitle: "Conceptos clave", previewBody: "Aprendizaje corto con aplicación inmediata.", demoLabel: "Abrir herramienta" },
     { id: "finance-debt-balance", category: "finance", name: "Optimizador", tag: "Optimizador", state: "Activo", href: "finance/optimizador/index.html", description: "Ajusta pesos de cartera según riesgo y objetivo.", previewTitle: "Ajuste de cartera", previewBody: "Balance rápido entre crecimiento y estabilidad.", demoLabel: "Abrir herramienta" },
     { id: "finance-crypto-delta", category: "finance", name: "Analizador", tag: "Analizador", state: "Activo", href: "finance/analizador/index.html", description: "Diagnóstico de cartera y lectura visual de valores de mercado.", previewTitle: "Diagnóstico y contexto", previewBody: "Evalúa correlación, riesgo y entorno en una sola vista.", demoLabel: "Abrir herramienta" },
+    { id: "finance-etf-future", category: "finance", name: "Inversiones · ETFs", tag: "Inversiones", state: "Activo", href: "etf/index.html", description: "Base histórica de rallies, patrones y ETFs con futuro en una vista operativa.", previewTitle: "Rallies y patrones ETF", previewBody: "Consulta universo, rallies detectados y ETFs con futuro desde un módulo dedicado.", demoLabel: "Abrir módulo" },
 
     { id: "productivity-routine-blocks", category: "productivity", name: "Routine Blocks", tag: "Rutinas", state: "Próximamente", href: "productivity/rutinas/index.html", description: "Plantillas de rutina diarias y semanales.", previewTitle: "Bloques de rutina", previewBody: "Secuencias configurables por contexto y energía.", demoLabel: "Abrir herramienta" },
     { id: "productivity-deep-work-grid", category: "productivity", name: "Deep Work Grid", tag: "Planificador", state: "Planificado", href: "productivity/index.html", description: "Estructura de foco por bloques intensivos.", previewTitle: "Grid de foco", previewBody: "Plan semanal con capas de prioridad y ejecución.", demoLabel: "Abrir herramienta" },
@@ -187,7 +196,7 @@ window.ZYVOLA_DATA = {
     { id: "life-habit-pulse", category: "life", name: "Habit Pulse", tag: "Rutina", state: "Planificado", href: "life/index.html", description: "Pulso de hábitos para mejora incremental.", previewTitle: "Pulse de hábitos", previewBody: "Seguimiento compacto de consistencia y avance.", demoLabel: "Abrir herramienta" }
   ],
   highlights: {
-    mostUsed: ["finance-roi-architect", "finance-risk-matrix", "finance-cashflow-lens"],
+    mostUsed: ["finance-roi-architect", "finance-risk-matrix", "finance-etf-future"],
     new: ["finance-tax-route", "finance-debt-balance", "finance-crypto-delta"],
     recommended: ["finance-roi-architect", "productivity-deep-work-grid", "creative-brand-board"]
   },

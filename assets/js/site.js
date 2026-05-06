@@ -704,7 +704,7 @@
   function renderHomeQuickLinks() {
     const target = document.getElementById("home-quick-links");
     if (!target) return;
-    const navItems = (data.nav || []).filter((item) => item.key !== "home");
+    const navItems = ((data.homeLinks && data.homeLinks.length) ? data.homeLinks : (data.nav || []).filter((item) => item.key !== "home"));
     target.innerHTML = navItems.map(quickLinkTemplate).join("");
   }
 
@@ -727,9 +727,9 @@
 
     function buildSearchIndex() {
       return [
-        ...(data.nav || [])
+        ...(((data.homeLinks && data.homeLinks.length) ? data.homeLinks : (data.nav || []))
           .filter((item) => item.key !== "home")
-          .map((item) => ({ title: navLabel(item), text: navLabel(item), href: item.href, type: getI18nValue("search.category", "Categoría") })),
+          .map((item) => ({ title: navLabel(item), text: navLabel(item), href: item.href, type: getI18nValue("search.category", "Categoría") }))),
         ...(data.tools || []).map((tool) => ({
           title: tool.name,
           text: `${tool.name} ${tool.tag} ${tool.description}`,
@@ -781,6 +781,14 @@
     const category = data.categories[categoryKey];
     if (!category) return;
 
+    const subpageHref = (sub) => {
+      if (!sub || !sub.href) return "#";
+      if (sub.href.startsWith("../") || sub.href.startsWith("./") || sub.href.startsWith("http://") || sub.href.startsWith("https://")) {
+        return withPrefix(sub.href);
+      }
+      return withPrefix(`${category.key}/${sub.href}`);
+    };
+
     const heroKicker = document.getElementById("category-kicker");
     const heroTitle = document.getElementById("category-title");
     const heroDescription = document.getElementById("category-description");
@@ -792,7 +800,7 @@
 
     if (quickLinks) {
       quickLinks.innerHTML = (category.subpages || [])
-        .map((sub, index) => `<a class="pill" href="${withPrefix(`${category.key}/${sub.href}`)}"><span>${escapeHtml(sub.title)}</span><span>${String(index + 1).padStart(2, "0")}</span></a>`)
+        .map((sub, index) => `<a class="pill" href="${subpageHref(sub)}"><span>${escapeHtml(sub.title)}</span><span>${String(index + 1).padStart(2, "0")}</span></a>`)
         .join("");
       if (!quickLinks.innerHTML) {
         quickLinks.innerHTML = `<a class="pill" href="${withPrefix("connect/index.html")}"><span>Escalar ecosistema</span><span>01</span></a>`;
@@ -813,7 +821,7 @@
             <article class="card reveal compact-card">
               <h3>${escapeHtml(sub.title)}</h3>
               <p class="card-copy">${escapeHtml(sub.note || "Subpágina modular")}</p>
-              <a class="card-link" href="${withPrefix(`${category.key}/${sub.href}`)}">Abrir subpágina</a>
+              <a class="card-link" href="${subpageHref(sub)}">Abrir subpágina</a>
             </article>
           `
         )

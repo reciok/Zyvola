@@ -15,6 +15,10 @@
     :root { --bg:#f6f5f1; --bd:#e7e3d6; --txt:#1f1c14; --mut:#7a7361; --acc:#b8963e; }
     body[data-page="inversiones"] .main { padding-top: 24px; }
     body[data-page="inversiones"] .container.etf-shell { max-width: 1200px; }
+    .etf-subnav { display:flex; align-items:center; gap:10px; margin:0 0 14px; color:var(--mut); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+    .etf-subnav a { color:var(--mut); text-decoration:none; }
+    .etf-subnav a:hover { color:var(--acc); }
+    .etf-subnav .is-current { color:var(--acc); font-weight:700; }
     .etf-h1 { font-size:24px; margin:0 0 4px; }
     .etf-sub { color:var(--mut); margin:0 0 18px; }
     .etf-h2 { font-size:13px; text-transform:uppercase; letter-spacing:.06em; color:var(--mut); margin:24px 0 8px; border-top:1px solid var(--acc); padding-top:10px; text-align:left; }
@@ -45,31 +49,23 @@
   <main class="main">
     <section class="section">
       <div class="container etf-shell">
+        <div class="etf-subnav" aria-label="Navegación de inversiones">
+          <a href="../finance/panel/index.html">Panel</a>
+          <span>/</span>
+          <span class="is-current">Inversiones · ETFs</span>
+        </div>
         <h1 class="etf-h1">Inversiones · ETFs</h1>
-        <p class="etf-sub">Sistema automático: importar universo UCITS → analizar → detectar rallies +15% (7–90 d) → registrar → generar patrones → identificar <b>ETFs con futuro</b>.</p>
 
         <div class="etf-row">
-          <button class="etf-btn primary" id="btnRun">Ejecutar pipeline</button>
+          <button class="etf-btn primary" id="btnRun">Actualizar desde última revisión</button>
           <button class="etf-btn" id="btnUni">Universo</button>
           <button class="etf-btn" id="btnRal">Rallies</button>
           <button class="etf-btn" id="btnPat">Patrones</button>
           <button class="etf-btn" id="btnFut">ETFs con futuro</button>
-          <button class="etf-btn" id="btnClear">Limpiar BD</button>
         </div>
-
-        <div id="kpis" class="etf-grid"></div>
 
         <h2 class="etf-h2" id="title">Resultados</h2>
         <div id="out" class="etf-wrap"></div>
-
-        <h2 class="etf-h2">API</h2>
-        <pre class="etf-pre" id="api">// Endpoints expuestos en window.ETF_API:
-//   ETF_API.call("/etf/run")       → ejecuta pipeline completo
-//   ETF_API.call("/etf/universe")  → catálogo de ETFs
-//   ETF_API.call("/etf/snapshot")  → análisis técnico actual
-//   ETF_API.call("/etf/rallies")   → rallies registrados
-//   ETF_API.call("/etf/patrones")  → patrones detectados
-//   ETF_API.call("/etf/futuro")    → ETFs con futuro y explicación</pre>
       </div>
     </section>
   </main>
@@ -109,12 +105,15 @@
         return '<table class="etf-tbl"><thead><tr>'+th+'</tr></thead><tbody>'+tr+'</tbody></table>';
       }
       function renderKPIs(run){
+        if(!$kpis) return;
         if(!run) { $kpis.innerHTML = ""; return; }
         $kpis.innerHTML = [
           ["ETFs",   run.universeCount],
           ["Rallies detectados", run.ralliesDetected],
+          ["Rallies nuevos", run.ralliesNew],
           ["Rallies en BD", run.ralliesStored],
           ["Patrones", run.patternsCount],
+          ["Modo", run.mode === "historical-preload" ? "Base histórica cargada" : (run.mode === "incremental" ? "Actualización incremental" : "Lista para revisar")],
           ["ETFs con futuro", run.futureCount],
           ["Ejecutado", new Date(run.ranAt).toLocaleString()]
         ].map(function(p){ return '<div class="etf-kpi"><small>'+p[0]+'</small><b>'+p[1]+'</b></div>'; }).join("");
@@ -212,17 +211,20 @@
           ]);
         });
       };
-      document.getElementById("btnClear").onclick = function(){
-        if (!window.ZyvolaETF) return;
-        ZyvolaETF.rallyDB.clear();
-        ZyvolaETF.dataImporter.clearCache();
-        renderKPIs(null);
-        $title.textContent = "Base de datos vaciada";
-        $out.innerHTML = '<div class="etf-muted">Pulsa "Ejecutar pipeline" para regenerar.</div>';
-      };
-
-      // Auto-ejecuta al cargar
-      waitReady(function(){ document.getElementById("btnRun").click(); });
+      // Carga base histórica ya integrada y muestra el estado inicial
+      waitReady(function(){
+        var initial = ETF_API.initialize();
+        renderKPIs(initial);
+        $title.textContent = "ETFs con futuro · base actual";
+        $out.innerHTML = tableHTML(initial.future.slice(0,15), [
+          { label:"ETF", fmt:function(r){return '<b>'+r.etf.ticker+'</b> · '+r.etf.nombre;} },
+          { label:"Sector", fmt:function(r){return r.etf.sector;} },
+          { label:"Match", fmt:function(r){return Math.round(r.score*100)+"%";} },
+          { label:"Patrón principal", fmt:function(r){ return r.patronesCoincidentes[0] ? r.patronesCoincidentes[0].nombre : "—"; } },
+          { label:"Subida media", fmt:function(r){ return r.patronesCoincidentes[0] ? "+"+r.patronesCoincidentes[0].mediaSubida+"%" : "—"; } },
+          { label:"Explicación", key:"explicacion" }
+        ]);
+      });
     });
   </script>
 </body>
