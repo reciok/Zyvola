@@ -1,11 +1,7 @@
 /* ============================================================
  * Zyvola · PanelWorkspace.js  (lista vertical reordenable)
- *
- * Modelo:
- *   - Las tarjetas se apilan en una columna; se ven enteras a su
- *     tamaño natural (sin folio, sin recortes).
- *   - Solo se pueden REORDENAR arrastrándolas arriba/abajo.
- *   - No hay redimensionado, ni cambios de forma, ni grid de celdas.
+ * Reescrito desde cero — Pointer Events unificados para
+ * móvil y escritorio, sin conflictos con el scroll de página.
  * ============================================================ */
 (function () {
   "use strict";
@@ -117,17 +113,6 @@
           '<button class="finance-panel-actions__btn finance-panel-actions__btn--danger" data-panel-action="clear" title="Borrar todo">' + SVG_CLEAR + '</button>' +
           '<button class="finance-panel-actions__btn" data-panel-action="export" title="Exportar PDF">' + SVG_PDF + '</button>';
         nav.insertBefore(div, nav.firstChild);
-      }
-
-      if (!nav.querySelector(".zv-panel-sitenav")) {
-        var navBar = document.createElement("nav");
-        navBar.className = "zv-panel-sitenav";
-        navBar.innerHTML =
-          '<a class="zv-panel-sitenav__link" href="../../index.html">Inicio</a>' +
-          '<a class="zv-panel-sitenav__link" href="../../etf/index.html">Inversiones</a>' +
-          '<a class="zv-panel-sitenav__link" href="../../documents/index.html">Documentos</a>';
-        var actions = nav.querySelector(".finance-panel-actions");
-        nav.insertBefore(navBar, actions ? actions.nextSibling : nav.firstChild);
       }
     }
 
@@ -260,270 +245,34 @@
     });
   };
 
-  /* ── Drag para reordenar (solo arriba/abajo) ──────────── */
+  /* ── Mover tarjeta arriba/abajo un puesto ──────────────── */
   PanelWorkspace.prototype._attachReorder = function (card) {
     var self = this;
-    var handle = card.el.querySelector('[data-zv-drag-handle="1"]');
-    if (!handle) return;
-
-    var MOUSE_DRAG_THRESHOLD = 8;
-    var TOUCH_DRAG_THRESHOLD = 12;
-    var TOUCH_HOLD_DELAY     = 220;
-    var AUTO_SCROLL_EDGE     = 80;  // px desde el borde del VIEWPORT que activa el scroll
-
-    /* 3 velocidades lineales según distancia al borde del viewport.
-       0–20 px  → lento  (4 px/frame)
-       20–60 px → medio  (10 px/frame)
-       60+ px   → rápido (18 px/frame)   */
-    function scrollSpeed(dist) {
-      if (dist <= 20) return 4;
-      if (dist <= 60) return 10;
-      return 18;
-    }
-
-    function startDrag(startY) {
-      var el    = card.el;
-      var rect  = el.getBoundingClientRect();
-
-      var fixedLeft      = rect.left;
-      var fixedWidth     = rect.width;
-      var pointerOffsetY = startY - rect.top;
-      var currentPointerY = startY;
-
-      /* hasMoved: auto-scroll y placeholder solo arrancan cuando el usuario
-         mueve el dedo. Evita que la tarjeta "se mueva sola" al hacer tap. */
-      var hasMoved         = false;
-      /* dirty: la posición cambió; hay que actualizar la tarjeta en el RAF. */
-      var dirty            = false;
-      var rafId            = null;
-      var lastInsertBefore = undefined;
-      var originalNext     = el.nextSibling;
-
-      var placeholder = document.createElement("div");
-      placeholder.className = "zv-card__placeholder-slot";
-      placeholder.style.height = rect.height + "px";
-      el.parentNode.insertBefore(placeholder, el.nextSibling);
-
-      el.classList.add("is-dragging");
-      el.style.position      = "fixed";
-      el.style.left          = fixedLeft + "px";
-      el.style.width         = fixedWidth + "px";
-      el.style.top           = (startY - pointerOffsetY) + "px";
-      el.style.zIndex        = "1000";
-      el.style.pointerEvents = "none";
-      el.style.transform     = "none";
-
-      function getScrollY() {
-        return window.pageYOffset || document.documentElement.scrollTop || 0;
-      }
-
-      function siblings() {
-        return self.cards.filter(function (c) { return c !== card; }).map(function (c) { return c.el; });
-      }
-
-      /* Zonas de scroll basadas en VIEWPORT (igual que Google Keep/Tasks).
-         Funciona independientemente de la altura del contenido de la lista. */
-      function computeStep(clientY) {
-        var vh = window.innerHeight || document.documentElement.clientHeight || 0;
-        if (clientY < AUTO_SCROLL_EDGE) {
-          return -scrollSpeed(AUTO_SCROLL_EDGE - clientY);
-        }
-        if (clientY > vh - AUTO_SCROLL_EDGE) {
-          return scrollSpeed(clientY - (vh - AUTO_SCROLL_EDGE));
-        }
-        return 0;
-      }
-
-      /* Mueve el placeholder en el DOM sin FLIP ni reflows forzados.
-         Solo actúa cuando la posición de inserción cambia realmente. */
-      function placePlaceholder() {
-        var scrollY     = getScrollY();
-        var sibs        = siblings();
-        var pointerDocY = currentPointerY + scrollY;
-
-        var insertBefore = null;
-        for (var i = 0; i < sibs.length; i++) {
-          var r = sibs[i].getBoundingClientRect();
-          if (pointerDocY < r.top + scrollY + r.height / 2) {
-            insertBefore = sibs[i];
-            break;
-          }
-        }
-
-        if (insertBefore === lastInsertBefore) return;
-        lastInsertBefore = insertBefore;
-
-        if (insertBefore) {
-          insertBefore.parentNode.insertBefore(placeholder, insertBefore);
-        } else if (sibs.length) {
-          var last = sibs[sibs.length - 1];
-          last.parentNode.insertBefore(placeholder, last.nextSibling);
-        }
-      }
-
-      /* RAF loop: posición de la tarjeta + auto-scroll a máximo 60 fps.
-         Los eventos touchmove solo escriben en variables (sin tocar el DOM). */
-      function rafLoop() {
-        // 1. Actualizar posición de la tarjeta si el dedo se movió
-        if (dirty) {
-          dirty = false;
-          el.style.top = (currentPointerY - pointerOffsetY) + "px";
-          placePlaceholder();
-        }
-        // 2. Auto-scroll solo si el usuario ya movió el dedo
-        if (hasMoved) {
-          var step = computeStep(currentPointerY);
-          if (step) {
-            window.scrollBy(0, step);
-            placePlaceholder();
-          }
-        }
-        rafId = requestAnimationFrame(rafLoop);
-      }
-      rafId = requestAnimationFrame(rafLoop);
-
-      /* moveToY: solo actualiza el estado. El RAF se encarga del DOM. */
-      function moveToY(clientY) {
-        hasMoved        = true;
-        currentPointerY = clientY;
-        dirty           = true;
-      }
-
-      function endDrag() {
-        window.removeEventListener("mousemove",   onMouseMove);
-        window.removeEventListener("mouseup",     onMouseUp);
-        window.removeEventListener("touchmove",   onTouchMove);
-        window.removeEventListener("touchend",    onTouchEnd);
-        window.removeEventListener("touchcancel", onTouchEnd);
-        cancelAnimationFrame(rafId);
-        rafId = null;
-
-        if (placeholder.parentNode) {
-          if (hasMoved) {
-            // El usuario movió → confirmar la posición del placeholder
-            placeholder.parentNode.insertBefore(el, placeholder);
-          } else {
-            // Solo tap/hold sin mover → restaurar posición original
-            var par = placeholder.parentNode;
-            if (originalNext && originalNext.parentNode === par) {
-              par.insertBefore(el, originalNext);
-            } else {
-              par.appendChild(el);
-            }
-          }
-          placeholder.parentNode.removeChild(placeholder);
-        }
-
-        el.classList.remove("is-dragging");
-        el.style.position      = "";
-        el.style.left          = "";
-        el.style.top           = "";
-        el.style.width         = "";
-        el.style.zIndex        = "";
-        el.style.pointerEvents = "";
-        el.style.transform     = "";
-
-        self._syncOrderFromDom();
-        self._persist();
-      }
-
-      function onMouseMove(e) { moveToY(e.clientY); }
-      function onMouseUp()    { endDrag(); }
-      function onTouchMove(e) { e.preventDefault(); moveToY(e.touches[0].clientY); }
-      function onTouchEnd()   { endDrag(); }
-
-      window.addEventListener("mousemove",   onMouseMove);
-      window.addEventListener("mouseup",     onMouseUp);
-      window.addEventListener("touchmove",   onTouchMove, { passive: false });
-      window.addEventListener("touchend",    onTouchEnd);
-      window.addEventListener("touchcancel", onTouchEnd);
-    }
-
-    /* Excluir áreas con texto (.zv-card__title-wrap) y controles interactivos */
-    var TEXT_SELECTOR = "select, input, button, [contenteditable='true'], .zv-card__title-wrap";
-
-    handle.addEventListener("mousedown", function (ev) {
-      if (ev.target.closest(TEXT_SELECTOR)) return;
-
-      var startY      = ev.clientY;
-      var dragStarted = false;
-
-      function cleanup() {
-        window.removeEventListener("mousemove", onMouseMoveArmed);
-        window.removeEventListener("mouseup",   onMouseUpArmed);
-      }
-
-      function onMouseMoveArmed(moveEv) {
-        if (dragStarted) return;
-        if (Math.abs(moveEv.clientY - startY) < MOUSE_DRAG_THRESHOLD) return;
-        dragStarted = true;
-        cleanup();
-        ev.preventDefault();
-        startDrag(moveEv.clientY);
-      }
-
-      function onMouseUpArmed() { cleanup(); }
-
-      window.addEventListener("mousemove", onMouseMoveArmed);
-      window.addEventListener("mouseup",   onMouseUpArmed);
-    });
-
-    handle.addEventListener("touchstart", function (ev) {
-      if (ev.target.closest(TEXT_SELECTOR)) return;
-
-      var touch        = ev.touches[0];
-      var startY       = touch.clientY;
-      var startX       = touch.clientX;
-      var latestTouchY = startY;
-      var dragStarted  = false;
-
-      var timer = setTimeout(function () {
-        dragStarted = true;
-        startDrag(latestTouchY);
-      }, TOUCH_HOLD_DELAY);
-
-      function cleanup() {
-        clearTimeout(timer);
-        window.removeEventListener("touchmove",   onTouchMoveArmed);
-        window.removeEventListener("touchend",    onTouchEndArmed);
-        window.removeEventListener("touchcancel", onTouchEndArmed);
-      }
-
-      function onTouchMoveArmed(moveEv) {
-        if (dragStarted) return;
-        var current = moveEv.touches && moveEv.touches[0];
-        if (!current) return;
-        latestTouchY = current.clientY;
-        if (Math.abs(current.clientY - startY) > TOUCH_DRAG_THRESHOLD ||
-            Math.abs(current.clientX - startX) > TOUCH_DRAG_THRESHOLD) {
-          cleanup();
-        }
-      }
-
-      function onTouchEndArmed() { cleanup(); }
-
-      window.addEventListener("touchmove",   onTouchMoveArmed, { passive: true });
-      window.addEventListener("touchend",    onTouchEndArmed);
-      window.addEventListener("touchcancel", onTouchEndArmed);
-    }, { passive: true });
+    card.on("onMoveUp",   function () { self._moveCard(card.id, -1); });
+    card.on("onMoveDown", function () { self._moveCard(card.id, +1); });
   };
 
-  PanelWorkspace.prototype._syncOrderFromDom = function () {
-    var domOrder = Array.prototype.slice.call(this.list.children).filter(function (n) {
-      return n.classList && n.classList.contains("zv-card");
-    });
-    var byEl = new Map();
-    this.cards.forEach(function (c) { byEl.set(c.el, c); });
-    var sorted = [];
-    domOrder.forEach(function (n) {
-      var c = byEl.get(n);
-      if (c) sorted.push(c);
-    });
-    // Preservar tarjetas no presentes en DOM (por seguridad)
-    this.cards.forEach(function (c) {
-      if (sorted.indexOf(c) < 0) sorted.push(c);
-    });
-    this.cards = sorted;
+  PanelWorkspace.prototype._moveCard = function (id, dir) {
+    var idx = this.cards.findIndex(function (c) { return c.id === id; });
+    if (idx < 0) return;
+    var target = idx + dir;
+    if (target < 0 || target >= this.cards.length) return;
+
+    /* Intercambiar en el array */
+    var tmp = this.cards[idx];
+    this.cards[idx]    = this.cards[target];
+    this.cards[target] = tmp;
+
+    /* Reflejar en el DOM */
+    this._render();
+    this._persist();
+
+    /* Scroll suave para mantener la tarjeta visible */
+    if (tmp.el) {
+      requestAnimationFrame(function () {
+        try { tmp.el.scrollIntoView({ behavior: "smooth", block: "nearest" }); } catch (_) {}
+      });
+    }
   };
 
   PanelWorkspace.prototype._render = function () {

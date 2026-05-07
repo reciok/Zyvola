@@ -58,7 +58,7 @@
     el.dataset.cardId = this.id;
     el.dataset.toolName = this.toolName;
     el.innerHTML =
-      '<header class="zv-card__head" data-zv-drag-handle="1">' +
+      '<header class="zv-card__head">' +
         '<div class="zv-card__title-wrap">' +
           '<h3 class="zv-card__title">' + esc(this.toolName) + '</h3>' +
           '<p class="zv-card__sub">' + esc(this.section) + (this.group ? ' · ' + esc(this.group) : '') + '</p>' +
@@ -67,6 +67,8 @@
           /* Selects ocultos: el JS los necesita para size/shape aunque no se muestren en el menú */
           '<select class="zv-card__size" aria-hidden="true" style="display:none"><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option></select>' +
           '<select class="zv-card__shape" aria-hidden="true" style="display:none"><option value="rect">rect</option><option value="square">square</option><option value="wide">wide</option><option value="tall">tall</option></select>' +
+          '<button type="button" class="zv-card__btn zv-card__btn--move" data-act="move-up"   title="Subir tarjeta" aria-label="Subir">▲</button>' +
+          '<button type="button" class="zv-card__btn zv-card__btn--move" data-act="move-down" title="Bajar tarjeta" aria-label="Bajar">▼</button>' +
           '<button type="button" class="zv-card__btn zv-card__btn--menu" aria-haspopup="true" aria-expanded="false" title="Más opciones">⋯</button>' +
           '<div class="zv-card__menu" role="menu" hidden>' +
             '<button type="button" class="zv-card__menu-item" data-act="chart" role="menuitem">' +
@@ -155,6 +157,14 @@
         if (name === 'chart') {
           closeMenu();
           self._fire("onRequestChart");
+          return;
+        }
+        if (name === 'move-up') {
+          self._fire("onMoveUp");
+          return;
+        }
+        if (name === 'move-down') {
+          self._fire("onMoveDown");
           return;
         }
         if (name === 'advanced') {

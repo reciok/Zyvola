@@ -106,20 +106,14 @@ body[data-page="panel"] #zv-workspace-root {
   border-color: var(--zv-accent);
   box-shadow: 0 0 0 2px var(--zv-accent-soft), var(--zv-shadow-strong);
 }
-.zv-card.is-dragging {
-  opacity: 0.94;
-  cursor: grabbing;
-  box-shadow: var(--zv-shadow-strong);
-}
 
 .zv-card__head {
   display: flex; align-items: center; justify-content: space-between;
   gap: 10px; padding: 10px 14px;
   border-bottom: 1px solid var(--zv-border);
   background: linear-gradient(180deg, #fbfaf5, #fff);
-  cursor: grab;
+  touch-action: auto;
 }
-.zv-card.is-dragging .zv-card__head { cursor: grabbing; }
 .zv-card__title-wrap { min-width: 0; flex: 1; }
 .zv-card__title {
   font-size: 15px; font-weight: 600; color: var(--zv-text);
@@ -145,6 +139,18 @@ body[data-page="panel"] #zv-workspace-root {
 .zv-card__btn:hover { background: #faf8f1; }
 .zv-card__btn--remove { color: #b34141; }
 .zv-card__btn--chart  { color: var(--zv-accent); }
+/* Botones de mover arriba / abajo */
+.zv-card__btn--move {
+  font-size: 10px;
+  color: var(--zv-muted);
+  line-height: 1;
+}
+.zv-card__btn--move:hover {
+  color: var(--zv-accent);
+  border-color: var(--zv-accent);
+  background: rgba(184,150,62,0.08);
+}
+
 .zv-card__btn--menu {
   font-size: 18px; line-height: 1; font-weight: 700;
   color: var(--zv-muted);
@@ -613,34 +619,6 @@ body[data-page="panel"] .finance-tool-link:hover { color: var(--zv-accent); }
 /* ── Sidebar secundaria (opcional): mantiene estilo original si se usa ─ */
 .finance-tools-nav .finance-panel-actions { display: none; }
 
-/* ── Navegación del sitio dentro del drawer del panel ────── */
-.zv-panel-sitenav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  padding: 6px 10px 12px;
-  margin: 0 6px;
-  border-bottom: 1px solid rgba(184, 150, 62, 0.15);
-}
-.zv-panel-sitenav__link {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--zv-text-muted, #6b7280);
-  text-decoration: none;
-  padding: 4px 9px;
-  border-radius: 5px;
-  border: 1px solid var(--zv-border);
-  background: #fff;
-  transition: color .12s, border-color .12s, background .12s;
-}
-.zv-panel-sitenav__link:hover {
-  color: var(--zv-accent);
-  border-color: var(--zv-accent);
-  background: rgba(184, 150, 62, 0.06);
-}
-
 /* ── Modal ───────────────────────────────────────────────── */
 .zv-modal-overlay {
   position: fixed; inset: 0;
@@ -695,15 +673,6 @@ body[data-page="panel"] .finance-tool-link:hover { color: var(--zv-accent); }
 .zv-modal__list .muted { color: var(--zv-muted); font-size: 11px; }
 
 /* ── Responsive móvil ────────────────────────────────────── */
-
-/* Cabecera drag: indicar que solo arrastra verticalmente en touch */
-.zv-card__head {
-  touch-action: pan-y;
-}
-/* Durante arrastre bloquear scroll de página */
-.zv-card.is-dragging .zv-card__head {
-  touch-action: none;
-}
 
 /* Safe-area para muescas (iPhone X+) */
 body[data-page="panel"] .main > .section > .container {
